@@ -41,7 +41,9 @@ myID = -1
 
 def getNewCoords(Coords):
     global ListenFlag
+    #Gets fucked up / in some type of infinite loop on the next line
     temp = BLE.listen()
+    #End fucking up
     temp = temp.replace('_', '')
     print(temp)
     positions = encoder.decodeMessage(temp)
