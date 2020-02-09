@@ -28,7 +28,7 @@ Now goto Library Manager and search/install:
 
 #include <Adafruit_NeoPixel.h>
 
-#define LED_PIN    4
+#define LED_PIN   4
 #define LED_COUNT 12
 
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);

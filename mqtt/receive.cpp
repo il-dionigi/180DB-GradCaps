@@ -1,7 +1,4 @@
 //Defined Commands
-
-
-
 class CommandHandler{
 	CommandHandler::CommandHandler(){
 		x = -1;
