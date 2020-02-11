@@ -20,12 +20,18 @@ import numpy as np
 from flask import Flask, request, jsonify
 from flask import render_template
 from flask_bootstrap import Bootstrap
+import paho.mqtt.client as mqtt
 
 from BLE import broadcast_setup, broadcast
 from encoder import encodeMessage, decodeMessage
 from Node import Node
-import RPi.GPIO as io
+#import RPi.GPIO as io #Uncomment this for RASPBERRY PI Support
 import time
+
+RPI = True
+
+if RPI:
+	import RPi.GPIO
 
 #Will use bootstrap for frontend
 
@@ -39,22 +45,26 @@ broadcast_setup()
 led_r = 7 #gpio 4
 led_g = 11 #gpio 17
 led_b = 13 #gpio 27
-io.setmode(io.BCM)
-io.setup(led_r, io.OUT)
-io.output(led_r, 0)
-io.setup(led_g, io.OUT)
-io.output(led_g, 0)
-io.setup(led_b, io.OUT)
-io.output(led_b, 0)
+
+if RPI:
+	io.setmode(io.BCM)
+	io.setup(led_r, io.OUT)
+	io.output(led_r, 0)
+	io.setup(led_g, io.OUT)
+	io.output(led_g, 0)
+	io.setup(led_b, io.OUT)
+	io.output(led_b, 0)
 
 HATS_TOPIC = "Node"
 mqtt_client = mqtt.Client()
-mqtt_client.connect("localhost",1883,60)
+#mqtt_client.connect("localhost",1883,60)
+mqtt_client.connect("192.168.0.100",1883,60)
 
 app = Flask(__name__)
 Bootstrap(app)
 
 #mqtt_client.disconnect();
+
 
 def toggle_led(r, g, b, _time = 0.0):
 
@@ -204,9 +214,7 @@ def hello():
 			#print(sub_data)
 			#timestamp = sub_data["timestamp"]
 			if sub_data.empty:
-				#_row.format("(Row, Col) = (" + str(row) + " , " + str(col) + " )")
 				_row += """<div class="col"> Empty </div>\n"""
-				#print("Entered!")
 			else:
 				_row += """<div class="col"> {} </div>\n"""
 				str_subdata = str(sub_data)
@@ -223,36 +231,30 @@ def hello():
 				button = button.format(str(role_id) + "at" + str(row_num) + "," + str(col_num))
 
 				_row = _row.format(button)
-				#print("_row: " + str(_row))
-				#print("_button: " + str(button))
-				#row.format(str_subdata)
-				#rows.format(row_num)
 			col_num += 1
-		#print(rows)
-		#print(_row)
 		rows = rows.format(_row)
 		row_num += 1
 	container = container.format(rows)
 	if request.method == 'POST':
-					sync_loc = request.form.get('SyncBtn')
-					#print(sync_loc)
-					if sync_loc == "SyncAll":
-						print('SyncAll')
-						#TODO: Send RESYNC All, retry twice!
-						ble_msg = ble_pack_messages_syncall(data)
-						mqtt_msg = mqtt_pack_messages_syncall(data)
-						mqtt_client.publish(HATS_TOPIC, mqtt_msg)
-						broadcast(ble_msg)
-						toggle_led(0, 0, 255, _time=0.1)
-					else:
-						toggle_led(0, 255, 0, _time=0.1)
-						this_role, this_row, this_col = process_loc(sync_loc)
-						print(str(this_row))
-						ble_msg = format_ble_message(this_row, this_col, this_role, 0) #Assuming only one image displaying
-						mqtt_msg = format_mqtt_message(this_row, this_col, this_role)
-						mqtt_client.publish(HATS_TOPIC, mqtt_msg)
-						broadcast(ble_msg)
-						#TODO: Send BLE command that sends the row and column to the role id
+		sync_loc = request.form.get('SyncBtn')
+		#print(sync_loc)
+		if sync_loc == "SyncAll":
+			print('SyncAll')
+			#TODO: Send RESYNC All, retry twice!
+			ble_msg = ble_pack_messages_syncall(data)
+			mqtt_msg = mqtt_pack_messages_syncall(data)
+			mqtt_client.publish(HATS_TOPIC, mqtt_msg)
+			broadcast(ble_msg)
+			toggle_led(0, 0, 255, _time=0.1)
+		else:
+			toggle_led(0, 255, 0, _time=0.1)
+			this_role, this_row, this_col = process_loc(sync_loc)
+			print(str(this_row))
+			ble_msg = format_ble_message(this_row, this_col, this_role, 0) #Assuming only one image displaying
+			mqtt_msg = format_mqtt_message(this_row, this_col, this_role)
+			mqtt_client.publish(HATS_TOPIC, mqtt_msg)
+			broadcast(ble_msg)
+			#TODO: Send BLE command that sends the row and column to the role id
 	print(str(container))
 	return render_template("template.html", data_content=container)
 
