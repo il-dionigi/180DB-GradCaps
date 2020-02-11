@@ -75,8 +75,6 @@ void loop() {
   Adafruit_MQTT_Subscribe *subscription;
   while ((subscription = mqtt.readSubscription(5000))) {
     if (subscription == &test) {
-      //Serial.print(F("Got: "));
-      //Serial.println((char *)test.lastread);
       if (test.lastread[0] == 'R') {
         colorWipe(strip.Color(255,0,0)); 
       }
@@ -85,6 +83,9 @@ void loop() {
       }
       else if (test.lastread[0] == 'B') {
         colorWipe(strip.Color(0,0,255));
+      }
+      else if(test.lastread[0] == 'C' && test.lastread[1] == '1'){
+        //Do something
       }
     }
   }
