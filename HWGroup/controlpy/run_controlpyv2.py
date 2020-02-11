@@ -47,6 +47,15 @@ io.output(led_g, 0)
 io.setup(led_b, io.OUT)
 io.output(led_b, 0)
 
+HATS_TOPIC = "Node"
+mqtt_client = mqtt.Client()
+mqtt_client.connect("localhost",1883,60)
+
+app = Flask(__name__)
+Bootstrap(app)
+
+#mqtt_client.disconnect();
+
 def toggle_led(r, g, b, _time = 0.0):
 
 	if _time == 0.0:
@@ -77,9 +86,6 @@ def process_loc(sync_loc):
 
 	return role_id, row, col
 
-app = Flask(__name__)
-Bootstrap(app)
-
 def format_ble_message(row, col, id, mode):
 	#Row, Columns are 8 bit unsigned numbers
 	row = np.uint8(row)
@@ -92,7 +98,10 @@ def format_ble_message(row, col, id, mode):
 	return str(_bytes)
 	#Mode is the type of image being displayed.
 
-def pack_ble_messages_syncall(pandas_dataframe):
+def format_mqtt_message(row, col, id, mode=None):
+	mystr = "UpdateLoc/%s/%s/%s" % (id, row,col)
+
+def ble_pack_messages_syncall(pandas_dataframe):
 	Node_list = []
 	for index, row_iter in pandas_dataframe.iterrows():
 		#print(row_iter['row'])
@@ -112,9 +121,30 @@ def pack_ble_messages_syncall(pandas_dataframe):
 	sync_msg = ''
 	for i in range(len(msg)):
 		sync_msg += str(msg[i])
-	print(sync_msg)
-	print(decodeMessage(sync_msg))
+	#print(sync_msg)
+	#print(decodeMessage(sync_msg))
 	return sync_msg
+
+def mqtt_pack_messages_syncall(pandas_dataframe):
+	Node_list = []
+	for index, row_iter in pandas_dataframe.iterrows():
+		#print(row_iter['row'])
+		#print(row_iter)
+		#Old code
+		row = np.uint8(row_iter['row'])
+		col = np.uint8(row_iter['col'])
+		role_id = np.uint8(row_iter['role_id'])
+		#New Code
+		#ble_list.extend([row, col, role_id, mode])Old
+		#new_node = Node(int(role_id))
+		#new_node.x = int(row)
+		#new_node.y = int(row)
+		str_msg = "/%s/%s/%s" % (id, row, col)
+		Node_list.append(str_msg)
+	str_out = "UpdateAllLoc" + ''.join(Node_list)
+	return str_out
+
+
 
 def _init():
 
@@ -209,7 +239,9 @@ def hello():
 					if sync_loc == "SyncAll":
 						print('SyncAll')
 						#TODO: Send RESYNC All, retry twice!
-						ble_msg = pack_ble_messages_syncall(data)
+						ble_msg = ble_pack_messages_syncall(data)
+						mqtt_msg = mqtt_pack_messages_syncall(data)
+						mqtt_client.publish(HATS_TOPIC, mqtt_msg)
 						broadcast(ble_msg)
 						toggle_led(0, 0, 255, _time=0.1)
 					else:
@@ -217,6 +249,8 @@ def hello():
 						this_role, this_row, this_col = process_loc(sync_loc)
 						print(str(this_row))
 						ble_msg = format_ble_message(this_row, this_col, this_role, 0) #Assuming only one image displaying
+						mqtt_msg = format_mqtt_message(this_row, this_col, this_role)
+						mqtt_client.publish(HATS_TOPIC, mqtt_msg)
 						broadcast(ble_msg)
 						#TODO: Send BLE command that sends the row and column to the role id
 	print(str(container))
