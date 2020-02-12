@@ -185,8 +185,6 @@ def _init():
 				}
 
 	data.rename(columns=column_names, inplace=True)
-	#data.timestamp = pd.to_datetime(data.timestamp)
-	#print(data)
 	data.drop_duplicates(subset='role_id', keep='first', inplace=False)
 	return data
 
@@ -201,35 +199,24 @@ def hello():
 	row_num = 0
 	max_row = data["row"].max()
 	max_col = data["col"].max()
-	#print("max_row: " + str(max_row) + "max_col: " + str(max_col))
-	#TODO: Bugfix this to have a container that isnt completely empty!
 	node_list = []
 	for row in range(0, max_row + 1):
-		#print(row)
 		rows += """ <div class="row"> \n\t {} \n\t </div> """
 		col_num = 0
 		_row = ""
 		for col in range(0, max_col + 1):
 			sub_data = data.loc[(data["col"] == col_num) & (data["row"] == row_num)]
-			#print(sub_data)
-			#timestamp = sub_data["timestamp"]
 			if sub_data.empty:
 				_row += """<div class="col"> Empty </div>\n"""
 			else:
 				_row += """<div class="col"> {} </div>\n"""
 				str_subdata = str(sub_data)
-				#print(_row)
-				#print(str(sub_data['role_id'])[2:26])
 				role_id = str(sub_data['role_id'])[4:8].strip()
-				#_row = _row.format("\n\t<div>(Row, Col) = (" + str(row_num) + " , " + str(col_num) + " )" + "<br>role_id: " + str(sub_data['role_id'])[4:8].strip() + "</div>{}")
-
 				#Add a new line for a button
 				button = ("""\n\t<form action="" method = "post">
 					<input type = "submit" class="btn btn-primary btn-lg" name = "SyncBtn" value="Sync_{}" role="button"><br/>\n
 					</form>""")
-
 				button = button.format(str(role_id) + "at" + str(row_num) + "," + str(col_num))
-
 				_row = _row.format(button)
 			col_num += 1
 		rows = rows.format(_row)
