@@ -12,7 +12,8 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 int loc[2] = {5,5};
  
 void automata(Adafruit_NeoPixel *strip, uint32_t color, int *loc, unsigned char key, int axis){
-  int depth = 50;
+  //automata(&pixels, magenta, loc, 54, 0);
+  int depth = 200;
   int width = 51;
   
   int array[width*2];
