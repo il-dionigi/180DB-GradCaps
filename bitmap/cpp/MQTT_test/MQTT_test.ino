@@ -35,7 +35,7 @@ Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, "test_channel");
 void MQTT_connect();
 
 // Create a pointer to a bitmap class
-bitmap bm = bitmap(5,4,&strip);
+bitmap bm = bitmap(5,3,&strip);
 
 void setup() {
   Serial.begin(115200);
@@ -45,8 +45,9 @@ void setup() {
   strip.setBrightness(255);
 
   bm.generate_msg_v("UCLA!");
-  bm.generate_sequence_v(5, 0, 0);
-  bm.show_sequence_delay(1000,strip.Color(200,200,0));
+  bm.print_scroll();
+//  bm.generate_sequence_v(5, 0, 0);
+//  bm.show_sequence_delay(1000,strip.Color(200,200,0));
 
   Serial.println(F("Adafruit MQTT demo"));
 

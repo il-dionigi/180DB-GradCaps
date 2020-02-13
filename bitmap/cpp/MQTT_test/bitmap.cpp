@@ -146,6 +146,19 @@ void bitmap::print_char(char c) {
 	return;
 }
 
+void bitmap::print_scroll() {
+  generate_sequence_v(5, 0, 0); 
+  generate_sequence_v(5, 0, 1); 
+  generate_sequence_v(5, 0, 2); 
+  /*  generate_sequence_v(5, 0, 1); 
+  generate_sequence_v(5, 1, 1); 
+  generate_sequence_v(5, 2, 1); 
+  generate_sequence_v(5, 0, 2); 
+  generate_sequence_v(5, 1, 2); 
+  generate_sequence_v(5, 2, 2);
+  */
+}
+
 bool bitmap::generate_sequence_v(int iterations, int r, int c) {
 	int len = m_msg_len / m_columns;
 	m_seq_len = len + iterations;
@@ -208,22 +221,6 @@ bool bitmap::generate_sequence_v(int iterations, int r, int c) {
 		m_seq_v = parr;
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void bitmap::do_something(bool on, uint32_t color) {
 	if (on) {
@@ -373,7 +370,7 @@ bitmap::bitmap(int length, int width, Adafruit_NeoPixel* strip) {
 	}
 
 	if (m_columns == 3 & m_rows == 5) {
-		m_orientation = HORIZONTAL;
+		m_orientation = VERTICAL;
     charDict = create_charMap35();
   } else if (m_columns == 4 & m_rows == 5) {
     m_orientation = HORIZONTAL;
