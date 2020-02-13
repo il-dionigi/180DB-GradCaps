@@ -1,12 +1,4 @@
-#define MY_ROLE 0
-#define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args)
-#define X_ADDR 0
-#define Y_ADDR 1
-#define LED_PIN   4
-#define LED_COUNT 12
 #include <WiFi.h>
-//#include <C:\Users\Showb\OneDrive\Documents\Arduino\libraries\arduino-esp32-master\libraries\WiFi\src\WiFi.h>
-//#include <ArduinoSTL.h>
 #include <map>
 #include <vector>
 #include <Adafruit_NeoPixel.h>
@@ -16,12 +8,15 @@
 #include <stdio.h>
 #include <sstream>
 #include <NeoPixelBus.h>
-//Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> strip(LED_COUNT, LED_PIN);
-//const uint32_t red = strip.Color(150,0,0);
-//const uint32_t green = strip.Color(0,150,0);
-//const uint32_t blue = strip.Color(0,0,150);
-//const uint32_t yellow = strip.Color(200,130,0);
+#include "bitmap.h"
+#define MY_ROLE 0
+#define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
+#define X_ADDR 0
+#define Y_ADDR 1
+#define LED_PIN 4
+#define LED_COUNT 12
+#define NUM_ROWS 3
+#define NUM_COLS 5
 namespace patch
 {
     template < typename T > std::string to_string( const T& n )
@@ -31,23 +26,40 @@ namespace patch
         return stm.str() ;
     }
 }
-#include <iostream>
 class CommandHandler{
   public:
   typedef void (CommandHandler::*pfunc)(std::vector<String>&);
   CommandHandler(){
+    #ifdef ESP32
+      strip = NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod>;
+    #elif defined(ESP8266)
+      strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+    #endif
+    _bitmap = bitmap(NUM_ROWS, NUM_COLS, strip);
     x = EEPROM.read(X_ADDR);
     y = EEPROM.read(Y_ADDR);
     role_id = MY_ROLE;
     init_commands_with_args();
   }
   CommandHandler(int x, int y, int role_id){
+    #ifdef ESP32
+      strip = NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod>;
+    #elif defined(ESP8266)
+      strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+    #endif
+    _bitmap = bitmap(NUM_ROWS, NUM_COLS, strip);
     this->x = x;
     this->y = y;
     this->role_id = role_id;
     init_commands_with_args();
   }
     int x, y, role_id;
+    #ifdef ESP32
+      NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> strip;
+    #elif defined(ESP8266)
+      Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+    #endif
+    bitmap _bitmap;
     std::map<String, pfunc> commandsTable; 
     void set_red(){show_led_int(150,0,0);}
     void set_green(){show_led_int(0,150,0);}
@@ -59,15 +71,36 @@ class CommandHandler{
     void set_none(){show_led_int(0,0,0);}
     //pfunc cmd_func;
     void init_commands_with_args(){
-      commandsTable["ShowLED"] = &CommandHandler::show_led;
-      commandsTable["BlinkColor"] = &CommandHandler::blink_color;
-      commandsTable["TheaterChase"] = &CommandHandler::theaterChase;
-      commandsTable["Rainbow"] = &CommandHandler::rainbow;
-      commandsTable["TheaterChaseRainbow"] = &CommandHandler::theaterChaseRainbow;
-      commandsTable["UpdateRole"] = &CommandHandler::updateRole;
-      commandsTable["UpdateLoc"] = &CommandHandler::updateLoc;
-      commandsTable["UpdateAllLoc"] = &CommandHandler::updateAllLoc;
+      //Add a command to iterate over frames.
+      commandsTable["ShowAllLEDs"] = &CommandHandler::show_all_led; //Called as func/color(int,int,int) 
+      commandsTable["ShowLED"] = &CommandHandler::show_led; //Called as func/x/y/color(int,int,int)/
+      commandsTable["BlinkColor"] = &CommandHandler::blink_color; //Called as func/x/y/color/int/int
+      commandsTable["TheaterChase"] = &CommandHandler::theaterChase; //Called as func/x/y/color(int/int/int)/int(wait)
+      commandsTable["Rainbow"] = &CommandHandler::rainbow; //Called as func/x/y/int
+      commandsTable["TheaterChaseRainbow"] = &CommandHandler::theaterChaseRainbow; //Called as func/x/y/int
+      commandsTable["UpdateRole"] = &CommandHandler::updateRole; //Called as func/oldrole/newrole
+      commandsTable["UpdateLoc"] = &CommandHandler::updateLoc; //Called as func/role/x/y
+      commandsTable["UpdateAllLoc"] = &CommandHandler::updateAllLoc; //Dont use;
+      commandsTable["BitmapGenMsg"] = &(CommandHandler.bitmap.generate_msg_v); //Called as func/x/y/string
+      commandsTable["BitmapGenSeq"] = &(CommandHandler.bitmap.generate_sequence_v); //called as func/x/y/string
+      commandsTable["BitmapShowSeq"] = &(CommandHandler.bitmap.show_sequence); //called as func/x/y/string
+      //commandsTable["Auto"] = &(automata);
       return;
+    }
+    void bm_genmsg(std::vector<String> & input){
+      _bitmap.generate_msg_v(input[0].c_str());  
+    }
+    void bm_gen_seq(std::vector<String> & input){
+      _bitmap.generate_seq(input[0].c_str().toInt(), input[1].c_str().toInt(), 
+      input[2].c_str().toInt());  
+    }
+    void bm_show_seq(std::vector<String> & input){
+      //Color 
+      int r = String(input[1].c_str()).toInt();
+      int b = String(input[2].c_str()).toInt();
+      int g = String(input[3].c_str()).toInt();
+      uint32_t color = 0; // = strip.Color(r, b, g);
+      _bitmap.show_sequence(atol(input[0].c_str()), color)
     }
     void handle_command(std::string input, std::string delimiter = "/"){
       if (input.size() == 1){
@@ -123,13 +156,18 @@ class CommandHandler{
           }
         }
     }
+    inline bool check_vector_role(std::vector<String> & input){
+      return input[0].c_str().toInt() == this->role; 
+    }
+    inline bool check_vector_loc(std::vector<String> & input){
+      return (input[0].c_str().toInt() == this->x) && (input[1].c_str().toInt() == this->y); 
+    }
     void blink(){
       delay(0.5*role_id);
       this->show_led_int(255, 255, 255);
       delay(0.5);
       this->show_led_int(0, 0, 0);
     }
-    //void blink_color(int r, int b, int g){
     void blink_color(std::vector<String> & input){
       int r = String(input[0].c_str()).toInt();
       int b = String(input[1].c_str()).toInt();
@@ -139,8 +177,18 @@ class CommandHandler{
       delay(0.5);
       this->show_led_int(0, 0, 0);
     }
-    //void show_led(int r, int b, int g){
+    #ifdef ESP32
     void show_led(std::vector<String> & input){
+        if (check_vector_loc(input)){
+        int r = String(input[2].c_str()).toInt();
+        int b = String(input[3].c_str()).toInt();
+        int g = String(input[4].c_str()).toInt();  
+        //uint32_t mycolor = strip.Color(r, b, g);
+        show_led_int(r,b,g);
+        strip.Show();
+      }
+    }
+    void show_all_led(std::vector<String> & input){
       int r = String(input[0].c_str()).toInt();
       int b = String(input[1].c_str()).toInt();
       int g = String(input[2].c_str()).toInt();  
@@ -166,72 +214,235 @@ class CommandHandler{
       Serial.print(String("My Color: " + String(r) + " " + String(b) + " " + String(g)));
     }
     void colorWipe(std::vector<String> & input){
-      RgbColor color(String(input[0].c_str()).toInt(), String(input[1].c_str()).toInt(), String(input[2].c_str()).toInt());
-      int wait = String(input[3].c_str()).toInt();;
-      for(int i=0; i < LED_COUNT; i++) { // For each pixel in strip...
-        strip.SetPixelColor(i, color);         //  Set pixel's color (in RAM)
-        strip.Show();                          //  Update strip to match
-        delay(wait);                           //  Pause for a moment
+      if check_vector_loc(input){
+        RgbColor color(String(input[2].c_str()).toInt(), String(input[3].c_str()).toInt(), String(input[4].c_str()).toInt());
+        int wait = String(input[3].c_str()).toInt();;
+        for(int i=0; i < LED_COUNT; i++) { // For each pixel in strip...
+          strip.SetPixelColor(i, color);         //  Set pixel's color (in RAM)
+          strip.Show();                          //  Update strip to match
+          delay(wait);                           //  Pause for a moment
+        }
       }
     }
     void theaterChase(std::vector<String> & input){
-      RgbColor color(String(input[0].c_str()).toInt(), String(input[1].c_str()).toInt(), String(input[2].c_str()).toInt());
-      int wait = String(input[3].c_str()).toInt();
-      Serial.println("vector_len:" + String(input.size()) + " " + String(wait));
-      for(int a=0; a<10; a++) {  // Repeat 10 times...
-      for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-        //strip.clear();         //   Set all pixels in RAM to 0 (off)
-        // 'c' counts up from 'b' to end of strip in steps of 3...
-        for(int c=b; c < LED_COUNT; c += 3) {
-        strip.SetPixelColor(c, color); // Set pixel 'c' to value 'color'
+      if check_vector_loc(input){
+        RgbColor color(String(input[2].c_str()).toInt(), String(input[3].c_str()).toInt(), String(input[4].c_str()).toInt());
+        int wait = String(input[3].c_str()).toInt();
+        Serial.println("vector_len:" + String(input.size()) + " " + String(wait));
+        for(int a=0; a<10; a++) {  // Repeat 10 times...
+        for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
+          //strip.clear();         //   Set all pixels in RAM to 0 (off)
+          // 'c' counts up from 'b' to end of strip in steps of 3...
+          for(int c=b; c < LED_COUNT; c += 3) {
+          strip.SetPixelColor(c, color); // Set pixel 'c' to value 'color'
+          }
+          strip.Show(); // Update strip with new contents
+          delay(wait);  // Pause for a moment
+        }
+      }
+    }
+  }
+    void rainbow(std::vector<String> & input){
+      if check_vector_loc(input){
+        int wait = String(input[2].c_str()).toInt();
+        for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
+        for(int i=0; i < LED_COUNT; i++) { // For each pixel in strip...
+          // Offset pixel hue by an amount to make one full revolution of the
+          // color wheel (range of 65536) along the length of the strip
+          // (strip.numPixels() steps):
+          float  hue   = (firstPixelHue + i * 65536L / LED_COUNT)/65536L;
+          Serial.println(hue);
+          // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
+          // optionally add saturation and value (brightness) (each 0 to 255).
+          // Here we're using just the single-argument hue variant. The result
+          // is passed through strip.gamma32() to provide 'truer' colors
+          // before assigning to each pixel:
+          strip.SetPixelColor(i, HsbColor(hue, 1.0f, 1.0f));
         }
         strip.Show(); // Update strip with new contents
         delay(wait);  // Pause for a moment
-      }
-      }
-    }
-    void rainbow(std::vector<String> & input){
-      int wait = String(input[0].c_str()).toInt();
-      for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
-      for(int i=0; i < LED_COUNT; i++) { // For each pixel in strip...
-        // Offset pixel hue by an amount to make one full revolution of the
-        // color wheel (range of 65536) along the length of the strip
-        // (strip.numPixels() steps):
-        float  hue   = (firstPixelHue + i * 65536L / LED_COUNT)/65536L;
-        Serial.println(hue);
-        // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-        // optionally add saturation and value (brightness) (each 0 to 255).
-        // Here we're using just the single-argument hue variant. The result
-        // is passed through strip.gamma32() to provide 'truer' colors
-        // before assigning to each pixel:
-        strip.SetPixelColor(i, HsbColor(hue, 1.0f, 1.0f));
-      }
-      strip.Show(); // Update strip with new contents
-      delay(wait);  // Pause for a moment
+        }
       }
     }
     void theaterChaseRainbow(std::vector<String> & input){
-      int wait = String(input[0].c_str()).toInt();
-      float firstPixelHue = 0.0f;     // First pixel starts at red (hue 0)
-      for(int a=0; a<30; a++) {  // Repeat 30 times...
-      for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
-        //strip.Clear();         //   Set all pixels in RAM to 0 (off)
-        // 'c' counts up from 'b' to end of strip in increments of 3...
-        for(int c=b; c<LED_COUNT; c += 3) {
-        // hue of pixel 'c' is offset by an amount to make one full
-        // revolution of the color wheel (range 65536) along the length
-        // of the strip (strip.numPixels() steps):
-        float  hue   = (firstPixelHue + c * 65536L / LED_COUNT)/65536L;
-        Serial.println(hue);
-        HsbColor color(hue, 1.0f, 1.0f); // hue -> RGB
-        strip.SetPixelColor(c, color); // Set pixel 'c' to value 'color'
+      if(check_vector_loc(input)){
+        int wait = String(input[2].c_str()).toInt();
+        float firstPixelHue = 0.0f;     // First pixel starts at red (hue 0)
+        for(int a=0; a<30; a++) {  // Repeat 30 times...
+          for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
+            //strip.Clear();         //   Set all pixels in RAM to 0 (off)
+            // 'c' counts up from 'b' to end of strip in increments of 3...
+            for(int c=b; c<LED_COUNT; c += 3) {
+            // hue of pixel 'c' is offset by an amount to make one full
+            // revolution of the color wheel (range 65536) along the length
+            // of the strip (strip.numPixels() steps):
+            float  hue   = (firstPixelHue + c * 65536L / LED_COUNT)/65536L;
+            Serial.println(hue);
+            HsbColor color(hue, 1.0f, 1.0f); // hue -> RGB
+            strip.SetPixelColor(c, color); // Set pixel 'c' to value 'color'
+            }
+            strip.Show();                // Update strip with new contents
+            delay(wait);                 // Pause for a moment
+            firstPixelHue += (1 / 90); // One cycle of color wheel over 90 frames
+          }    
         }
-        strip.Show();                // Update strip with new contents
-        delay(wait);                 // Pause for a moment
-        firstPixelHue += (1 / 90); // One cycle of color wheel over 90 frames
-      }    
+      }
+    }
+    //theaterchase, theaterchaserainbow, rainbow, colorwipe, show_led_int,
+    //
+    #elif defined(ESP8266)
+    void show_led(std::vector<String> & input){
+       if (check_vector_loc(input)){
+          int r = String(input[0].c_str()).toInt();
+          int b = String(input[1].c_str()).toInt();
+          int g = String(input[2].c_str()).toInt();  
+          show_led_int(r,b,g);
+      }
+    }
+    void show_all_led(std::vector<String> & input){
+      int r = String(input[0].c_str()).toInt();
+      int b = String(input[1].c_str()).toInt();
+      int g = String(input[2].c_str()).toInt();  
+      show_led_int(r,b,g);
+    }
+   void show_led_int(unsigned int r, unsigned int b, unsigned int g){
+      uint32_t mycolor = strip.Color(r, b, g);
+      strip.SetPixelColor(0, mycolor);
+      strip.SetPixelColor(1, mycolor);
+      strip.SetPixelColor(2, mycolor);
+      strip.SetPixelColor(3, mycolor);
+      strip.SetPixelColor(4, mycolor);
+      strip.SetPixelColor(5, mycolor);
+      strip.SetPixelColor(6, mycolor);
+      strip.SetPixelColor(7, mycolor);
+      strip.SetPixelColor(8, mycolor);
+      strip.SetPixelColor(9, mycolor);
+      strip.SetPixelColor(10, mycolor);
+      strip.SetPixelColor(11, mycolor);
+      strip.Show();
+      Serial.print(String("My Color: " + String(r) + " " + String(b) + " " + String(g)));
+    }
+    void corners(){
+      uint32_t red = strip.Color(150,0,0);
+      uint32_t green = strip.Color(0,150,0);
+      uint32_t blue = strip.Color(0,0,150);
+      uint32_t yellow = strip.Color(200,130,0);
+      strip.setPixelColor(11, green);
+      strip.setPixelColor(0, green);
+      strip.setPixelColor(1, green);
+
+      strip.setPixelColor(2, blue);
+      strip.setPixelColor(3, blue);
+      strip.setPixelColor(4, blue);
+
+      strip.setPixelColor(5, red);
+      strip.setPixelColor(6, red);
+      strip.setPixelColor(7, red);
+
+      strip.setPixelColor(8, yellow);
+      strip.setPixelColor(9, yellow);
+      strip.setPixelColor(10, yellow);
+      strip.show();
+    }
+
+  // Some functions of our own for creating animated effects -----------------
+
+  // Fill strip pixels one after another with a color. Strip is NOT cleared
+  // first; anything there will be covered pixel by pixel. Pass in color
+  // (as a single 'packed' 32-bit value, which you can get by calling
+  // strip.Color(red, green, blue) as shown in the loop() function above),
+  // and a delay time (in milliseconds) between pixels.
+  void colorWipe(std::vector<String> input) {
+    if(check_vector_loc(input)){
+      int r = String(input[2].c_str()).toInt();
+      int b = String(input[3].c_str()).toInt();
+      int g = String(input[4].c_str()).toInt();  
+      uint32_t color = strip.Color(r,b,g);
+      int wait = input[5];
+      for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+        strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+        strip.show();                          //  Update strip to match
+        delay(wait);                           //  Pause for a moment
+      }
     }
   }
+
+  // Theater-marquee-style chasing lights. Pass in a color (32-bit value,
+  // a la strip.Color(r,g,b) as mentioned above), and a delay time (in ms)
+  // between frames.
+  void theaterChase(std::vector<String> input) {
+    if(check_vector_loc(input)){
+      int r = String(input[2].c_str()).toInt();
+      int b = String(input[3].c_str()).toInt();
+      int g = String(input[4].c_str()).toInt();  
+      uint32_t color = strip.Color(r,b,g);
+      int wait = input[3].c_str().toInt();
+      for(int a=0; a<10; a++) {  // Repeat 10 times...
+        for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
+          strip.clear();         //   Set all pixels in RAM to 0 (off)
+          // 'c' counts up from 'b' to end of strip in steps of 3...
+          for(int c=b; c<strip.numPixels(); c += 3) {
+            strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
+          }
+          strip.show(); // Update strip with new contents
+          delay(wait);  // Pause for a moment
+        }
+      }
+    }
+  }
+
+  // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
+  void rainbow(std::vector<String> input) {
+    if(check_vector_loc(input)){
+      int wait = input[3].c_str().toInt();
+      // Hue of first pixel runs 5 complete loops through the color wheel.
+      // Color wheel has a range of 65536 but it's OK if we roll over, so
+      // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time
+      // means we'll make 5*65536/256 = 1280 passes through this outer loop:
+      for(long firstPixelHue = 0; firstPixelHue < 5*65536; firstPixelHue += 256) {
+        for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+          // Offset pixel hue by an amount to make one full revolution of the
+          // color wheel (range of 65536) along the length of the strip
+          // (strip.numPixels() steps):
+          int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
+          // strip.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
+          // optionally add saturation and value (brightness) (each 0 to 255).
+          // Here we're using just the single-argument hue variant. The result
+          // is passed through strip.gamma32() to provide 'truer' colors
+          // before assigning to each pixel:
+          strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
+        }
+        strip.show(); // Update strip with new contents
+        delay(wait);  // Pause for a moment
+      }
+    }
+  }
+
+  // Rainbow-enhanced theater marquee. Pass delay time (in ms) between frames.
+  void theaterChaseRainbow(std::vector<String> input) {
+    if(check_vector_loc(input)){
+      int wait = String(input[2].c_str()).toInt();
+      int firstPixelHue = 0;     // First pixel starts at red (hue 0)
+      for(int a=0; a<30; a++) {  // Repeat 30 times...
+        for(int b=0; b<3; b++) { //  'b' counts from 0 to 2...
+          strip.clear();         //   Set all pixels in RAM to 0 (off)
+          // 'c' counts up from 'b' to end of strip in increments of 3...
+          for(int c=b; c<strip.numPixels(); c += 3) {
+            // hue of pixel 'c' is offset by an amount to make one full
+            // revolution of the color wheel (range 65536) along the length
+            // of the strip (strip.numPixels() steps):
+            int      hue   = firstPixelHue + c * 65536L / strip.numPixels();
+            uint32_t color = strip.gamma32(strip.ColorHSV(hue)); // hue -> RGB
+            strip.setPixelColor(c, color); // Set pixel 'c' to value 'color'
+          }
+          strip.show();                // Update strip with new contents
+          delay(wait);                 // Pause for a moment
+          firstPixelHue += 65536 / 90; // One cycle of color wheel over 90 frames
+        }
+      }
+    }
+  }
+    #endif
     void updateRole(std::vector<String> & input){
       this->role_id = input[0].toInt();
     }
@@ -262,3 +473,23 @@ class CommandHandler{
       //return func();
     }
 };
+
+std::map<std::pair<int, int>, CommandHandler*> MyLEDBoards;
+std::map<std::pair<String>, int> LocationArgIndex;
+
+void init_location_arg_index(){
+  LocationArgIndex["ShowAllLEDs"] = -1 //Called as func/color(int,int,int)
+  LocationArgIndex["ShowLED"] = 1; //Called as func/x/y/color(int,int,int)/
+  LocationArgIndex["BlinkColor"] = 1; //Called as func/x/y/color/int/int
+  LocationArgIndex["TheaterChase"] = 1; //Called as func/x/y/color(int/int/int)/int(wait)
+  LocationArgIndex["Rainbow"] = 1; //Called as func/x/y/int
+  LocationArgIndex["TheaterChaseRainbow"] = 1; //Called as func/x/y/int
+  LocationArgIndex["UpdateRole"] = -1; //Called as func/oldrole/newrole
+  LocationArgIndex["UpdateLoc"] = 2; //Called as func/role/x/y
+  LocationArgIndex["UpdateAllLoc"] = -1 //Dont use;
+  LocationArgIndex["BitmapGenMsg"] = 1; //Called as func/x/y/string
+  LocationArgIndex["BitmapGenSeq"] = 1; //called as func/x/y/string
+  LocationArgIndex["BitmapShowSeq"] = 1; //called as func/x/y/string
+  //LocationArgIndex["Auto"] = &(automata);
+}
+//Currently only one support for one led board
