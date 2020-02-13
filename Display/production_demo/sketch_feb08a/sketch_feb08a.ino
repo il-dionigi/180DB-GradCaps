@@ -6,11 +6,12 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
-//#define WLAN_SSID       "ece_private"
-//#define WLAN_PASS       "uclagradcap"
-#define WLAN_SSID       "ASUS_50_2G"
-#define WLAN_PASS       "1337h4v3fun#97"
-#define AIO_SERVER      "192.168.50.17"
+#define WLAN_SSID       "ece_private"
+#define WLAN_PASS       "uclagradcap"
+//#define WLAN_SSID       "ASUS_50_2G"
+//#define WLAN_PASS       "1337h4v3fun#97"
+//#define AIO_SERVER      "192.168.50.17"
+#define AIO_SERVER "192.168.0.100"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
 #include <ESP8266WiFi.h>
@@ -53,7 +54,7 @@ void setup() {
   myCommandHandler.strip.begin();
   myCommandHandler.strip.show();
   myCommandHandler.strip.setBrightness(255);
-
+  delay(10);
   Serial.println(F("Adafruit MQTT demo"));
 
   // Connect to WiFi access point.
