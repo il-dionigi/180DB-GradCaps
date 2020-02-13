@@ -54,6 +54,17 @@ void setup() {
   myCommandHandler.strip.begin();
   myCommandHandler.strip.show();
   myCommandHandler.strip.setBrightness(255);
+  /*
+  myCommandHandler.x = 0;
+  myCommandHandler.y = 0;
+  myCommandHandler._bitmap.generate_msg_v("UCLA");
+  myCommandHandler._bitmap.generate_sequence_v(5, 0, 0);
+  myCommandHandler._bitmap.generate_sequence_v(5, 0, 1);
+  myCommandHandler._bitmap.generate_sequence_v(5, 0, 2);
+  myCommandHandler._bitmap.generate_sequence_v(5, 0, 3);
+  myCommandHandler._bitmap.generate_sequence_v(5, 0, 4);
+  */
+  //bitmap.show_sequence
   delay(10);
   Serial.println(F("Adafruit MQTT demo"));
 
