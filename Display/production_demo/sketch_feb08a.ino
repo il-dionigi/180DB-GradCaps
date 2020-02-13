@@ -1,24 +1,22 @@
-#include <ESP8266WiFi.h>
+//#include <PubSubClient.h>
+#include <stdio.h>
+#include "CommandHandler.h"
 #include "Adafruit_MQTT.h"
 #include "Adafruit_MQTT_Client.h"
-#include <Adafruit_NeoPixel.h>
-
-#define LED_PIN 4
-#define LED_COUNT 12
-/************************* WiFi Access Point *********************************/
-
+#include <sstream>
+#include <vector>
+#include <iterator>
+//#define WLAN_SSID       "ece_private"
+//#define WLAN_PASS       "uclagradcap"
 #define WLAN_SSID       "ASUS_50_2G"
 #define WLAN_PASS       "1337h4v3fun#97"
-
-/************************* Mqtt Setup *********************************/
-
-#define AIO_SERVER      "192.168.0.100"
+#define AIO_SERVER      "192.168.50.17"
 #define AIO_SERVERPORT  1883
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
-
-// Create an ESP8266 WiFiClient class to connect to the MQTT server.
+#define CHANNEL "test_channel"
+#include <ESP8266WiFi.h>
+//using namespace std;
 WiFiClient client;
-
+CommandHandler myCommandHandler;
 // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT);
 
@@ -29,6 +27,22 @@ Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, "test_channel");
 
 /*************************** Sketch Code ************************************/
 
+std::vector<String> my_split(std::string &input, std::string & delimiter) {
+    std::vector<String> parses; // 10 maximum args
+    size_t pos = 0; size_t i = 0;
+    String token;
+    //std::string tokens = s.substr(0, s.find(delimiter));
+    while ((pos = input.find(delimiter)) != std::string::npos) {
+        token = String(input.substr(0, pos).c_str());
+        //std::cout << token << std::endl;
+        parses.push_back(token);
+        input.erase(0, pos + delimiter.length());
+        //Serial.print(String("TOKEN" + token));
+        i++;
+    }
+    return parses;
+}
+
 // Bug workaround for Arduino 1.6.6, it seems to need a function declaration
 // for some reason (only affects ESP8266, likely an arduino-builder bug).
 void MQTT_connect();
@@ -36,9 +50,9 @@ void MQTT_connect();
 void setup() {
   Serial.begin(115200);
   delay(10);
-  strip.begin();
-  strip.show();
-  strip.setBrightness(255);
+  myCommandHandler.strip.begin();
+  myCommandHandler.strip.show();
+  myCommandHandler.strip.setBrightness(255);
 
   Serial.println(F("Adafruit MQTT demo"));
 
@@ -74,19 +88,30 @@ void loop() {
 
   Adafruit_MQTT_Subscribe *subscription;
   while ((subscription = mqtt.readSubscription(5000))) {
-    if (subscription == &test) {
-      if (test.lastread[0] == 'R') {
-        colorWipe(strip.Color(255,0,0)); 
-      }
-      else if (test.lastread[0] == 'G') {
-        colorWipe(strip.Color(0,255,0)); 
-      }
-      else if (test.lastread[0] == 'B') {
-        colorWipe(strip.Color(0,0,255));
-      }
-      else if(test.lastread[0] == 'C' && test.lastread[1] == '1'){
-        //Do something
-      }
+  if (subscription == &test){
+    String messageTemp = String((char *)test.lastread);
+    Serial.print(messageTemp);
+    myCommandHandler.handle_command(std::string(messageTemp.c_str()));
+      /*
+      std::string arg1 = std::string(messageTemp.c_str());
+      std::string arg2 = std::string(String("\n").c_str());
+      std::vector<String> cmds_list = my_split(arg1, arg2);
+      for(size_t i = 0; i < cmds_list.size(); i++){
+        std::string arg1 = std::string(cmds_list[i].c_str());
+        std::string arg2 = std::string(String("/").c_str());
+        std::vector<String> this_cmd_vector = my_split(arg1, arg2);
+        //cmd_handle = MyLedBoards[this_cmd_vector[1].toInt(), this_cmd_vector[2].c_str().toInt()]
+        bool valid_cmd = myCommandHandler.commandsTable.count(this_cmd_vector[0]) > 0;
+        Serial.print(this_cmd_vector[0]);
+        Serial.print(valid_cmd);
+        if (valid_cmd){
+          int location_arg_index = LocationArgIndex[this_cmd_vector[0]];
+          //CommandHandler* cmd_handle = MyLedBoards[{this_cmd_vector[location_arg_index].toInt(), this_cmd_vector[location_arg_index+1].c_str().toInt()}];
+          myCommandHandler.handle_command(std::string(cmds_list[i].c_str()));
+         }
+        }
+        */
+      
     }
   }
   if (! mqtt.ping()) {
@@ -122,8 +147,8 @@ void MQTT_connect() {
 }
 
 void colorWipe(uint32_t color) {
-  for (int i = 0; i < strip.numPixels(); i++) { // For each pixel in strip...
-    strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
-    strip.show();                          //  Update strip to match
+  for (int i = 0; i < myCommandHandler.strip.numPixels(); i++) { // For each pixel in strip...
+    myCommandHandler.strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
+    myCommandHandler.strip.show();                          //  Update strip to match
   }
 }
