@@ -9,7 +9,7 @@
 #include <Adafruit_NeoPixel.h>
 //#include <NeoPixelBus.h>
 #include "bitmap.h"
-#define MY_ROLE 0
+#define MY_ROLE 3
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -81,19 +81,29 @@ class CommandHandler{
       return;
     }
     void bm_genmsg(std::vector<String> & input){
-      _bitmap.generate_msg_v((char*)input[0].c_str());  
+      _bitmap.generate_msg_v((char*)input[0].c_str());
+      Serial.println("Generated Message Successfully!");  
     }
     void bm_gen_seq(std::vector<String> & input){
-      _bitmap.generate_sequence_v((String(input[0].c_str()).toInt()), (String(input[1].c_str()).toInt()), 
+      /*if (x == String(input[1].c_str()).toInt() && y == String(input[2].c_str()).toInt()){
+        Serial.println("Generated Sequence Successfully!");
+        _bitmap.generate_sequence_v((String(input[0].c_str()).toInt()), (String(input[1].c_str()).toInt()), 
       (String(input[2].c_str()).toInt()));  
+      }*/
+
+      _bitmap.generate_sequence_v(String(input[0].c_str()).toInt(), x, y);
     }
     void bm_show_seq(std::vector<String> & input){
       //Color 
       int r = String(input[1].c_str()).toInt();
       int b = String(input[2].c_str()).toInt();
       int g = String(input[3].c_str()).toInt();
-      uint32_t color = 0; // = strip.Color(r, b, g);
-      _bitmap.show_sequence(atol(input[0].c_str()), color);
+      //uint32_t color = 0; 
+      uint32_t color = strip.Color(r, b, g);
+      long wait_time = atol(input[0].c_str());
+      Serial.println("Expected wait time for show_sequence:");
+      Serial.println(wait_time);
+      _bitmap.show_sequence(wait_time, color);
     }
     void handle_command(std::string input, std::string delimiter = "/"){
       if (input.size() == 1){
