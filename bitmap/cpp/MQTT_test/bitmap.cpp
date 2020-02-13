@@ -221,8 +221,6 @@ bitmap::bitmap(int length, int width, Adafruit_NeoPixel* strip) {
     m_orientation = VERTICAL;
     charDict = create_charMap55();
   }
-
-  
 }
 
 bitmap::~bitmap() {
