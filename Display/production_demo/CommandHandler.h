@@ -1,4 +1,4 @@
-#include <WiFi.h>
+//#include <WiFi.h>
 #include <map>
 #include <vector>
 #include <iostream>
@@ -38,6 +38,8 @@ class CommandHandler{
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     x = EEPROM.read(X_ADDR);
     y = EEPROM.read(Y_ADDR);
+    //x = -1;
+    //y = -1;
     role_id = MY_ROLE;
     init_commands_with_args();
   }
@@ -132,7 +134,7 @@ class CommandHandler{
               //std::cout << token << std::endl;
               parses.push_back(token);
               input.erase(0, pos + delimiter.length());
-              //Serial.print(String("TOKEN" + token));
+              Serial.print(String("TOKEN" + token));
               i++;
           }
           bool valid_cmd = commandsTable.count(parses[0]) > 0;
