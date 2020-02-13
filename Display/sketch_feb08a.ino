@@ -13,23 +13,25 @@
 #define AIO_SERVER      "192.168.50.17"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
-using namespace std;
+//using namespace std;
 WiFiClient client;
 PubSubClient mqtt(client);
 CommandHandler myCommandHandler;
-MyLEDBoards[std::pair<X_ADDR, Y_ADDR>] = &myCommandHandler;
-template <typename Out>
-void split(const std::string &s, char delim, Out result) {
-    std::istringstream iss(s);
-    std::string item;
-    while (std::getline(iss, item, delim)) {
-        *result++ = item;
+
+std::vector<String> my_split(std::string &input, std::string & delimiter) {
+    std::vector<String> parses; // 10 maximum args
+    size_t pos = 0; size_t i = 0;
+    String token;
+    //std::string tokens = s.substr(0, s.find(delimiter));
+    while ((pos = input.find(delimiter)) != std::string::npos) {
+        token = String(input.substr(0, pos).c_str());
+        //std::cout << token << std::endl;
+        parses.push_back(token);
+        input.erase(0, pos + delimiter.length());
+        //Serial.print(String("TOKEN" + token));
+        i++;
     }
-}
-std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, std::back_inserter(elems));
-    return elems;
+    return parses;
 }
 void callback(char* topic, uint8_t* message, unsigned int length) {
   Serial.print("Message arrived on topic: ");
@@ -42,42 +44,49 @@ void callback(char* topic, uint8_t* message, unsigned int length) {
   }
   Serial.println();
   if (std::string(topic) == CHANNEL){
-    try{
+    //try{
       //Separate by newlines
-      cmds_list = split(std::string(messageTemp.c_str()));
-      for (int i < 0; i++ ; i < cmds_list.size()){
-        this_cmd_vector = split(cmds_list, '/')
+      std::string arg1 = std::string(messageTemp.c_str());
+      std::string arg2 = std::string(String("\n").c_str());
+      std::vector<String> cmds_list = my_split(arg1, arg2);
+      for(size_t i = 0; i < cmds_list.size(); i++){
+        std::string arg1 = std::string(cmds_list[i].c_str());
+        std::string arg2 = std::string(String("/").c_str());
+        std::vector<String> this_cmd_vector = my_split(arg1, arg2);
         //cmd_handle = MyLedBoards[this_cmd_vector[1].toInt(), this_cmd_vector[2].c_str().toInt()]
-        bool valid_cmd = commandsTable.count(parses[0]) > 0;
-        if valid_cmd{
-          location_arg_index = LocationArgIndex[this_cmd_vector[0]];
-          //CommandHandler* cmd_handle = MyLedBoards[this_cmd_vector[location_arg_index].toInt(), this_cmd_vector[location_arg_index+1].c_str().toInt()]
+        bool valid_cmd = myCommandHandler.commandsTable.count(this_cmd_vector[0]) > 0;
+        if (valid_cmd){
+          int location_arg_index = LocationArgIndex[this_cmd_vector[0]];
+          //CommandHandler* cmd_handle = MyLedBoards[{this_cmd_vector[location_arg_index].toInt(), this_cmd_vector[location_arg_index+1].c_str().toInt()}];
           myCommandHandler.handle_command(std::string(messageTemp.c_str()));
           //
-        }
+        //}
       }
     }
-    catch (const std::exception &exc){
-      ESP_LOGE(APP_TAG, "Exception: %s", exc.what() );
-    }
+    //catch (const std::exception &exc){
+    //  ESP_LOGE(APP_TAG, "Exception: %s", exc.what() );
+    //}
   }
 }
 //Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, "test_channel");
 void setup() {
   //myCommandHandler.show_led_int(0,0,0);
+  //MyLEDBoards[{x, y}] = &myCommandHandler();
+  init_location_arg_index();
   std::map<std::pair<int, int>, CommandHandler*>::iterator it = MyLEDBoards.begin();
   for (std::pair<std::pair<int,int>, CommandHandler*> element : MyLEDBoards) {
     std::pair<int,int> loc = element.first;
     CommandHandler* cmd_handle = element.second;
+    #ifdef ESP32
     cmd_handle->strip.Begin();
     cmd_handle->strip.show();
+    #elif defined(ESP8266)
+    cmd_handle->strip.begin();
+    cmd_handle->strip.show();
+    #endif
   }
   // Iterate over the map using Iterator till end.
   Serial.begin(115200);
-  //myCommandHandler.strip.Begin();           // INITIALIZE NeoPixel myCommandHandler.strip object (REQUIRED)
-  //myCommandHandler.strip.Show();            // Turn OFF all pixels ASAP
-  //myCommandHandler.strip.setBrightness(50); // Set BRIGHTNESS to about 1/5 (max = 255)
-  //delay(1000);
 
   // Connect to WiFi access point.
   Serial.println(); Serial.println();
@@ -135,12 +144,10 @@ void reconnect(){
   }
 
 void loop() {
-  //portDISABLE_INTERRUPTS();
   if (!client.connected()) {
     reconnect();
   }
   mqtt.loop();
-  //portENABLE_INTERRUPTS();
   delay(1000);
   //Any other publish logic should go here.
 }
