@@ -13,7 +13,7 @@
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
-#define LED_PIN 4
+#define LED_PIN D4
 #define LED_COUNT 12
 #define NUM_ROWS 3
 #define NUM_COLS 5

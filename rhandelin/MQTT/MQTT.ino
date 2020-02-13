@@ -7,8 +7,8 @@
 #define LED_COUNT 12
 /************************* WiFi Access Point *********************************/
 
-#define WLAN_SSID       "ece_private"
-#define WLAN_PASS       "uclagradcap"
+#define WLAN_SSID       "ASUS_50_2G"
+#define WLAN_PASS       "1337h4v3fun#97"
 
 /************************* Mqtt Setup *********************************/
 

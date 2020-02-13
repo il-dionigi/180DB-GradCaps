@@ -13,6 +13,7 @@
 #define AIO_SERVER      "192.168.50.17"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
+#include <ESP8266WiFi.h>
 //using namespace std;
 WiFiClient client;
 PubSubClient mqtt(client);
@@ -70,24 +71,21 @@ void callback(char* topic, uint8_t* message, unsigned int length) {
 }
 //Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, "test_channel");
 void setup() {
+  //ESP.wdtDisable();
+  Serial.begin(115200);
   //myCommandHandler.show_led_int(0,0,0);
-  //MyLEDBoards[{x, y}] = &myCommandHandler();
-  init_location_arg_index();
-  std::map<std::pair<int, int>, CommandHandler*>::iterator it = MyLEDBoards.begin();
-  for (std::pair<std::pair<int,int>, CommandHandler*> element : MyLEDBoards) {
-    std::pair<int,int> loc = element.first;
-    CommandHandler* cmd_handle = element.second;
-    #ifdef ESP32
-    cmd_handle->strip.Begin();
-    cmd_handle->strip.show();
-    #elif defined(ESP8266)
+  //MyLEDBoards[{0, 0}] = &myCommandHandler;
+  CommandHandler* cmd_handle = &myCommandHandler;
+  //init_location_arg_index();
+  //std::map<std::pair<int, int>, CommandHandler*>::iterator it = MyLEDBoards.begin();
+  //#ifdef ESP32
+   // cmd_handle->strip.Begin();
+   // cmd_handle->strip.Show();
+  //#elif defined(ESP8266)
     cmd_handle->strip.begin();
     cmd_handle->strip.show();
-    #endif
-  }
+  //#endif
   // Iterate over the map using Iterator till end.
-  Serial.begin(115200);
-
   // Connect to WiFi access point.
   Serial.println(); Serial.println();
   Serial.print("Connecting to ");
@@ -95,7 +93,7 @@ void setup() {
   
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(300);
+    delay(500);
     WiFi.begin(WLAN_SSID, WLAN_PASS);
     Serial.print(".");
   }
@@ -103,11 +101,10 @@ void setup() {
 
   Serial.println("WiFi connected");
   Serial.println("IP address: "); Serial.println(WiFi.localIP());
-
   // Setup MQTT subscription for onoff feed.
-  mqtt.setServer(AIO_SERVER, AIO_SERVERPORT);
-  mqtt.setCallback(callback);
-  mqtt.subscribe(CHANNEL);
+  //mqtt.setServer(AIO_SERVER, AIO_SERVERPORT);
+  //mqtt.setCallback(callback);
+  //mqtt.subscribe(CHANNEL);
 }
 
 
@@ -132,13 +129,13 @@ void reconnect(){
           CommandHandler* cmd_handle = element.second;
           cmd_handle -> show_led_int(255, 0, 0);
         }
-        delay(2000);
+        delay(1000);
         for (std::pair<std::pair<int,int>, CommandHandler*> element : MyLEDBoards) {
             std::pair<int,int> loc = element.first;
             CommandHandler* cmd_handle = element.second;
             cmd_handle -> show_led_int(0, 0, 0);
           }
-        delay(3000);
+        delay(2000);
       }
     }
   }
@@ -148,6 +145,6 @@ void loop() {
     reconnect();
   }
   mqtt.loop();
-  delay(1000);
+  //delay(1000);
   //Any other publish logic should go here.
 }
