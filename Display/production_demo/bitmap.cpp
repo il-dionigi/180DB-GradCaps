@@ -135,27 +135,11 @@ void bitmap::do_something(bool on, uint32_t color) {
 }
 
 void bitmap::show_sequence(long interval_ms, uint32_t color) {
-  /*
 	int i = 0;
 	for (int i = 0; i < m_seq_len; ++i) {
 		do_something(*(m_seq_v + i), color);
 		delay(interval_ms);
 	}
-  */
-
-  unsigned long current_ms = millis();
-  unsigned long previous_ms = current_ms;
-
-  int i = 0;
-  if (current_ms - previous_ms >= interval_ms) {
-    // save the last time you blinked the LED
-    previous_ms = current_ms;
-    do_something(*(m_seq_v + i), color);
-    ++i;
-    if (i == m_seq_len) {
-      return;
-    }
-  }
 }
 
 void bitmap::show_sequence_v2(long interval_ms, uint32_t color) {
