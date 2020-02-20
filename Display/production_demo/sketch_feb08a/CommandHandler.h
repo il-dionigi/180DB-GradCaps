@@ -7,7 +7,8 @@
 #include <stdio.h>
 #include <sstream>
 #include <Adafruit_NeoPixel.h>
-//#include <NeoPixelBus.h>
+#include <list>
+#include <tuple>
 #include "bitmap.h"
 #define MY_ROLE 3
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
@@ -28,9 +29,17 @@ namespace patch
     }
 }
 */
+
+struct Colors{
+unsigned int r,b,g;
+};
+
+
 class CommandHandler;
 std::map<String, int> LocationArgIndex;
 std::map<std::pair<int,int>, CommandHandler*> MyLEDBoards;
+std::list<std::vector<String>> CommandsList;
+std::list<Colors> FramesList;
 class CommandHandler{
   public:
   typedef void (CommandHandler::*pfunc)(std::vector<String>&);
@@ -38,8 +47,6 @@ class CommandHandler{
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     x = EEPROM.read(X_ADDR);
     y = EEPROM.read(Y_ADDR);
-    //x = -1;
-    //y = -1;
     role_id = MY_ROLE;
     init_commands_with_args();
   }
@@ -77,20 +84,39 @@ class CommandHandler{
       commandsTable["BitmapGenMsg"] = &CommandHandler::bm_genmsg; //Called as func/x/y/string
       commandsTable["BitmapGenSeq"] = &CommandHandler::bm_gen_seq; //called as func/x/y/string
       commandsTable["BitmapShowSeq"] = &CommandHandler::bm_show_seq; //called as func/x/y/string
-      //commandsTable["Auto"] = &(automata);
+      commandsTable["StoreFrame"] = &CommandHandler::store_frame;
+      commandsTable["StartFrames"] = &CommandHandler::show_frames;
+      //commandsTable["Auto"] = &(CommandHandler::automata);
       return;
+    }
+    void store_frame(std::vector<String> & input){
+      //This vector should be somewhat huge, in the following structure:
+      //String 0: Show_LED/x/y/c0/c1/c2
+      bool myFrame = check_vector_loc(input);
+      if(myFrame){
+        Colors colorObj;
+        colorObj.r = String(input[2]).toInt();
+        colorObj.b = String(input[3]).toInt();
+        colorObj.g = String(input[4]).toInt();
+        FramesList.push_back(colorObj);
+        //CommandsList.push_back(input);
+      }
+    }
+    void show_frames(std::vector<String> & input){
+      for (std::list<Colors>::iterator it = FramesList.begin() ; it != FramesList.end(); ++it){
+        unsigned int r, g, b;
+        r = it->r;
+        g = it->g;
+        b = it->b;
+        show_led_int(r,g,b);
+        delay(.016);
+      }
     }
     void bm_genmsg(std::vector<String> & input){
       _bitmap.generate_msg_v((char*)input[0].c_str());
       Serial.println("Generated Message Successfully!");  
     }
     void bm_gen_seq(std::vector<String> & input){
-      /*if (x == String(input[1].c_str()).toInt() && y == String(input[2].c_str()).toInt()){
-        Serial.println("Generated Sequence Successfully!");
-        _bitmap.generate_sequence_v((String(input[0].c_str()).toInt()), (String(input[1].c_str()).toInt()), 
-      (String(input[2].c_str()).toInt()));  
-      }*/
-
       _bitmap.generate_sequence_v(String(input[0].c_str()).toInt(), x, y);
     }
     void bm_show_seq(std::vector<String> & input){
@@ -103,7 +129,7 @@ class CommandHandler{
       long wait_time = atol(input[0].c_str());
       Serial.println("Expected wait time for show_sequence:");
       Serial.println(wait_time);
-      _bitmap.show_sequence(wait_time, color);
+      _bitmap.show_sequence_delay(wait_time, color);
     }
     void handle_command(std::string input, std::string delimiter = "/"){
       if (input.size() == 1){
@@ -135,16 +161,15 @@ class CommandHandler{
           }
         }
         else{
-          std::vector<String> parses; // 10 maximum args
+          std::vector<String> parses; 
           size_t pos = 0; size_t i = 0;
           String token;
-          //std::string tokens = s.substr(0, s.find(delimiter));
           while ((pos = input.find(delimiter)) != std::string::npos) {
               token = String(input.substr(0, pos).c_str());
               //std::cout << token << std::endl;
               parses.push_back(token);
               input.erase(0, pos + delimiter.length());
-              Serial.print(String("TOKEN" + token));
+              Serial.print(String("TOKEN" + token + "\n"));
               i++;
           }
           bool valid_cmd = commandsTable.count(parses[0]) > 0;
@@ -155,18 +180,17 @@ class CommandHandler{
             CALL_MEMBER_FN(*this, cmd_func, parses);
           }
           else{
-            Serial.println(String("Invalid Command!" + parses[0])); 
+            Serial.println(String("Invalid Command!" + parses[0] + "\n")); 
           }
         }
     }
-    inline bool check_vector_role(std::vector<String> & input){
-      return String(input[0].c_str()).toInt() == this->role_id; 
+    inline bool check_vector_role(std::vector<String> & input, int role_index = 0){
+      return String(input[role_index].c_str()).toInt() == this->role_id; 
     }
-    inline bool check_vector_loc(std::vector<String> & input){
-      return (String(input[0].c_str()).toInt() == this->x) && (String(input[1].c_str()).toInt() == this->y); 
+    inline bool check_vector_loc(std::vector<String> & input, int x_index = 0, int y_index = 1){
+      return (String(input[x_index].c_str()).toInt() == this->x) && (String(input[y_index].c_str()).toInt() == this->y); 
     }
     void blink(){
-      delay(0.5*role_id);
       this->show_led_int(255, 255, 255);
       delay(0.5);
       this->show_led_int(0, 0, 0);
@@ -175,9 +199,13 @@ class CommandHandler{
       int r = String(input[0].c_str()).toInt();
       int b = String(input[1].c_str()).toInt();
       int g = String(input[2].c_str()).toInt();  
-      delay(0.5*role_id);
       this->show_led_int(r, b, g);
       delay(0.5);
+      this->show_led_int(0, 0, 0);
+    }
+    void blink_color(int r, int b, int g, int wait = 0.5){
+      this->show_led_int(r, b, g);
+      delay(wait);
       this->show_led_int(0, 0, 0);
     }
     void show_led(std::vector<String> & input){
@@ -375,6 +403,16 @@ class CommandHandler{
       //memcpy(func, input[0], sizeof(input[0]));
       //__builtin___clear_cache(func, func + sizeof(func));
       //return func();
+    }
+    String get_status(){
+      std::stringstream fmt;
+      fmt << "Role: " << role_id << "x: " << x << "y: " << y << "r,g,b: " << strip.getPixelColor(2);
+      return String(fmt.str().c_str());
+    }
+    String get_error(const char* error, const char* values){
+      std::stringstream fmt;
+      fmt << "Role: " << role_id << "x: " << x << "y: " << y << "r,g,b: " << error << values;
+      return String(fmt.str().c_str());
     }
 };
 
