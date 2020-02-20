@@ -10,6 +10,8 @@
 
 #define WLAN_SSID       "ece_private"
 #define WLAN_PASS       "uclagradcap"
+//#define WLAN_SSID       "Big Boi Roch"
+//#define WLAN_PASS       "gottaeat"
 
 /************************* Mqtt Setup *********************************/
 
@@ -35,7 +37,7 @@ Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, "test_channel");
 void MQTT_connect();
 
 // Create a pointer to a bitmap class
-bitmap bm = bitmap(5,3,&strip);
+bitmap bm = bitmap(5,5,&strip, HORIZONTAL);
 
 void setup() {
   Serial.begin(115200);
@@ -94,7 +96,7 @@ void loop() {
         colorWipe(strip.Color(0,0,255));
       }
       else if(test.lastread[0] == 'C' && test.lastread[1] == '1'){
-        bm.show_sequence_delay(1000, strip.Color(0,0,255));
+//        bm.show_sequence_delay(1000, strip.Color(0,0,255));
       }
     }
   }
