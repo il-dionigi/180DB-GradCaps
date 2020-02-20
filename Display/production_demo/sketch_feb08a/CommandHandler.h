@@ -38,8 +38,6 @@ class CommandHandler{
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     x = EEPROM.read(X_ADDR);
     y = EEPROM.read(Y_ADDR);
-    //x = -1;
-    //y = -1;
     role_id = MY_ROLE;
     init_commands_with_args();
   }
@@ -103,7 +101,7 @@ class CommandHandler{
       long wait_time = atol(input[0].c_str());
       Serial.println("Expected wait time for show_sequence:");
       Serial.println(wait_time);
-      _bitmap.show_sequence(wait_time, color);
+      _bitmap.show_sequence_delay(wait_time, color);
     }
     void handle_command(std::string input, std::string delimiter = "/"){
       if (input.size() == 1){
@@ -166,7 +164,6 @@ class CommandHandler{
       return (String(input[0].c_str()).toInt() == this->x) && (String(input[1].c_str()).toInt() == this->y); 
     }
     void blink(){
-      delay(0.5*role_id);
       this->show_led_int(255, 255, 255);
       delay(0.5);
       this->show_led_int(0, 0, 0);
@@ -175,9 +172,13 @@ class CommandHandler{
       int r = String(input[0].c_str()).toInt();
       int b = String(input[1].c_str()).toInt();
       int g = String(input[2].c_str()).toInt();  
-      delay(0.5*role_id);
       this->show_led_int(r, b, g);
       delay(0.5);
+      this->show_led_int(0, 0, 0);
+    }
+    void blink_color(int r, int b, int g, int wait = 0.5){
+      this->show_led_int(r, b, g);
+      delay(wait);
       this->show_led_int(0, 0, 0);
     }
     void show_led(std::vector<String> & input){
@@ -375,6 +376,16 @@ class CommandHandler{
       //memcpy(func, input[0], sizeof(input[0]));
       //__builtin___clear_cache(func, func + sizeof(func));
       //return func();
+    }
+    String get_status(){
+      std::stringstream fmt;
+      fmt << "Role: " << role_id << "x: " << x << "y: " << y << "r,g,b: " << strip.getPixelColor(2);
+      return String(fmt.str().c_str());
+    }
+    String get_error(const char* error, const char* values){
+      std::stringstream fmt;
+      fmt << "Role: " << role_id << "x: " << x << "y: " << y << "r,g,b: " << error << values;
+      return String(fmt.str().c_str());
     }
 };
 

@@ -14,36 +14,34 @@
 #define AIO_SERVER "192.168.0.100"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
+#define RESP_CHANNEL "client_response"
 #include <ESP8266WiFi.h>
+
 //using namespace std;
 WiFiClient client;
 CommandHandler myCommandHandler;
 // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
 Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT);
-
 /****************************** Feeds ***************************************/
 
 // Setup a feed called 'test' for subscribing to changes.
-Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, "test_channel");
+Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, CHANNEL);
+Adafruit_MQTT_Publish test_pub = Adafruit_MQTT_Publish(&mqtt, RESP_CHANNEL);
 
-/*************************** Sketch Code ************************************/
-
-std::vector<String> my_split(std::string &input, std::string & delimiter) {
-    std::vector<String> parses; // 10 maximum args
-    size_t pos = 0; size_t i = 0;
-    String token;
-    //std::string tokens = s.substr(0, s.find(delimiter));
-    while ((pos = input.find(delimiter)) != std::string::npos) {
-        token = String(input.substr(0, pos).c_str());
-        //std::cout << token << std::endl;
-        parses.push_back(token);
-        input.erase(0, pos + delimiter.length());
-        //Serial.print(String("TOKEN" + token));
-        i++;
+std::vector<String> my_split(const char * sentence)
+{
+  std::stringstream ss(sentence);
+  std::string to;
+  std::vector<String> output;
+  if (sentence != NULL)
+  {
+    while(std::getline(ss,to,'\n')){
+      output.push_back(String(to.c_str()));
     }
-    return parses;
-}
+  }
 
+  return output;
+}
 // Bug workaround for Arduino 1.6.6, it seems to need a function declaration
 // for some reason (only affects ESP8266, likely an arduino-builder bug).
 void MQTT_connect();
@@ -103,31 +101,25 @@ void loop() {
   if (subscription == &test){
     String messageTemp = String((char *)test.lastread);
     Serial.print(messageTemp);
-    myCommandHandler.handle_command(std::string(messageTemp.c_str()));
-      /*
-      std::string arg1 = std::string(messageTemp.c_str());
-      std::string arg2 = std::string(String("\n").c_str());
-      std::vector<String> cmds_list = my_split(arg1, arg2);
-      for(size_t i = 0; i < cmds_list.size(); i++){
-        std::string arg1 = std::string(cmds_list[i].c_str());
-        std::string arg2 = std::string(String("/").c_str());
-        std::vector<String> this_cmd_vector = my_split(arg1, arg2);
-        //cmd_handle = MyLedBoards[this_cmd_vector[1].toInt(), this_cmd_vector[2].c_str().toInt()]
-        bool valid_cmd = myCommandHandler.commandsTable.count(this_cmd_vector[0]) > 0;
-        Serial.print(this_cmd_vector[0]);
-        Serial.print(valid_cmd);
-        if (valid_cmd){
-          int location_arg_index = LocationArgIndex[this_cmd_vector[0]];
-          //CommandHandler* cmd_handle = MyLedBoards[{this_cmd_vector[location_arg_index].toInt(), this_cmd_vector[location_arg_index+1].c_str().toInt()}];
-          myCommandHandler.handle_command(std::string(cmds_list[i].c_str()));
-         }
-        }
-        */
-      
+    std::vector<String> messageVec = my_split(messageTemp.c_str());
+    for (std::vector<String>::iterator it = messageVec.begin() ; it != messageVec.end(); ++it){
+      bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
+      if (valid_cmd)  {
+        myCommandHandler.handle_command(std::string((*it).c_str()));
+      }
+      else{
+        myCommandHandler.blink();
+        Serial.print("Got an invalid command");
+        Serial.print((*it).c_str());
+        String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
+        test_pub.publish(error.c_str());
+      }
     }
+    test_pub.publish(myCommandHandler.get_status().c_str());
+   }
   }
   if (! mqtt.ping()) {
-    mqtt.disconnect();
+    mqtt.disconnect(); //Is this why they keep disconnecting?
   }
 }
 
@@ -156,11 +148,4 @@ void MQTT_connect() {
     }
   }
   Serial.println("MQTT Connected!");
-}
-
-void colorWipe(uint32_t color) {
-  for (int i = 0; i < myCommandHandler.strip.numPixels(); i++) { // For each pixel in strip...
-    myCommandHandler.strip.setPixelColor(i, color);         //  Set pixel's color (in RAM)
-    myCommandHandler.strip.show();                          //  Update strip to match
-  }
 }
