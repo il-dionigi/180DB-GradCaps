@@ -387,7 +387,9 @@ void bitmap::show_sequence_scroll_delay(long interval_ms, uint32_t color) {
   m_strip->clear();
   m_strip->show();
 }
-
+void bitmap::set_orientation(ORIENTATION orientation){
+  m_orientation = orientation;
+}
 void bitmap::show_sequence_scroll_nodelay(long interval_ms, uint32_t color) {
   /*
 	int i = 0;

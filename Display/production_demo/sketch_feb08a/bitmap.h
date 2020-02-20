@@ -36,4 +36,5 @@ public:
   // can't think of good name, like the OG but lights up by column during interval
   void show_sequence_scroll_delay(long interval_ms, uint32_t color);
   void show_sequence_scroll_nodelay(long interval_ms, uint32_t color);
+  void set_orientation(ORIENTATION orientation);
 };
