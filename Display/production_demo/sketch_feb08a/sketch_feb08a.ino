@@ -119,10 +119,10 @@ void loop() {
         Serial.print("Got an invalid command \n");
         Serial.print((*it).c_str());
         String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
-        test_pub.publish(error.c_str());
+        //test_pub.publish(error.c_str());
       }
     }
-    test_pub.publish(myCommandHandler.get_status().c_str());
+    //test_pub.publish(myCommandHandler.get_status().c_str());
    }
   }
   if (! mqtt.ping()) {
