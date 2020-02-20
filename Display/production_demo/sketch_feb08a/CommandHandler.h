@@ -10,7 +10,8 @@
 #include <list>
 #include <tuple>
 #include "bitmap.h"
-#define MY_ROLE 17
+#include "automata.h"
+#define MY_ROLE 5
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -29,14 +30,14 @@ std::list<Colors> FramesList;
 class CommandHandler{
   public:
   typedef void (CommandHandler::*pfunc)(std::vector<String>&);
-  CommandHandler() : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip){
+  CommandHandler() : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL){
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     x = EEPROM.read(X_ADDR);
     y = EEPROM.read(Y_ADDR);
     role_id = MY_ROLE;
     init_commands_with_args();
   }
-  CommandHandler(int x, int y, int role_id) : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip){
+  CommandHandler(int x, int y, int role_id) : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL){
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     this->x = x;
     this->y = y;
@@ -67,13 +68,21 @@ class CommandHandler{
       commandsTable["UpdateRole"] = &CommandHandler::updateRole; //Called as func/oldrole/newrole
       commandsTable["UpdateLoc"] = &CommandHandler::updateLoc; //Called as func/role/x/y
       commandsTable["UpdateAllLoc"] = &CommandHandler::updateAllLoc; //Dont use;
-      commandsTable["BitmapGenMsg"] = &CommandHandler::bm_genmsg; //Called as func/x/y/string
+      commandsTable["BitmapGenMsgV"] = &CommandHandler::bm_genmsg_v; //Called as func/x/y/string
+      commandsTable["BitmapGenMsgH"] = &CommandHandler::bm_genmsg_h; //Called as func/x/y/string
       commandsTable["BitmapGenSeq"] = &CommandHandler::bm_gen_seq; //called as func/x/y/string
       commandsTable["BitmapShowSeq"] = &CommandHandler::bm_show_seq; //called as func/x/y/string
       commandsTable["StoreFrame"] = &CommandHandler::store_frame;
       commandsTable["StartFrames"] = &CommandHandler::show_frames;
-      //commandsTable["Auto"] = &(CommandHandler::automata);
+      commandsTable["Auto"] = &CommandHandler::call_automata;
       return;
+    }
+    void call_automata(std::vector<String> & input){
+      int r = input[0].toInt();
+      int b = input[1].toInt();
+      int g = input[2].toInt();
+      automata(&strip, strip.Color(r, b, g), this->x, this->y,
+      input[3].c_str()[0]);
     }
     void store_frame(std::vector<String> & input){
       //This vector should be somewhat huge, in the following structure:
@@ -97,6 +106,14 @@ class CommandHandler{
         show_led_int(r,g,b);
         delay(.016);
       }
+    }
+    void bm_genmsg_v(std::vector<String> & input){
+      _bitmap.set_orientation(VERTICAL);
+      bm_genmsg(input);  
+    }
+    void bm_genmsg_h(std::vector<String> & input){
+      _bitmap.set_orientation(HORIZONTAL);
+      bm_genmsg(input);  
     }
     void bm_genmsg(std::vector<String> & input){
       _bitmap.generate_msg_v((char*)input[0].c_str());

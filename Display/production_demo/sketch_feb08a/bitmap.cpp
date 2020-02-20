@@ -147,25 +147,89 @@ void bitmap::print_char(char c) {
 }
 
 void bitmap::print_scroll() {
-  generate_sequence_v(5, 0, 0); 
-  generate_sequence_v(5, 0, 1); 
-  generate_sequence_v(5, 0, 2); 
-  /*  generate_sequence_v(5, 0, 1); 
-  generate_sequence_v(5, 1, 1); 
-  generate_sequence_v(5, 2, 1); 
-  generate_sequence_v(5, 0, 2); 
-  generate_sequence_v(5, 1, 2); 
-  generate_sequence_v(5, 2, 2);
+  if (m_orientation == VERTICAL) {
+    bool*** output = new bool**[m_columns];
+    for (int r = 0; r < m_rows; ++r) {
+      output[r] = new bool*[m_rows];
+      for (int c = 0; c < m_columns; c++) {
+        output[r][c] = get_sequence_v(5, r, c);
+      }
+    }
+    
+    char* display = new char[(m_columns+1)*(m_rows+1)];
+    for (int i = 0; i < m_seq_len; ++i) {
+      int index = 0;
+      for (int r = 0; r < m_rows; ++r) {
+        for (int c = 0; c < m_columns; c++) {
+          if (output[r][c][i] == 1) {
+            display[index] = '#';
+          }
+          else {
+            display[index] = ' ';
+          }
+          ++index;
+        }
+        display[index] = '\n';
+        ++index;
+      }
+      display[index-1] = '\0';
+      Serial.println(display);
+      Serial.println("---------");
+    }
+    delete display;
+    
+    for (int r = 0; r < m_rows; ++r) {
+      for (int c = 0; c < m_columns; c++) {
+        delete[] output[r][c];
+      }
+    }
+  } else {
+    bool*** output = new bool**[m_columns];
+    for (int r = 0; r < m_rows; ++r) {
+      output[r] = new bool*[m_rows];
+      for (int c = 0; c < m_columns; c++) {
+        output[r][c] = get_sequence_v(5, r, c);
+      }
+    }
+    
+    char* display = new char[(m_columns+1)*(m_rows+1)];
+    for (int i = 0; i < m_seq_len; ++i) {
+      int index = 0;
+      for (int r = 0; r < m_rows; ++r) {
+        for (int c = 0; c < m_columns; c++) {
+          if (output[r][c][i] == 1) {
+            display[index] = '#';
+          }
+          else {
+            display[index] = ' ';
+          }
+          ++index;
+        }
+        display[index] = '\n';
+        ++index;
+      }
+      display[index-1] = '\0';
+      Serial.println(display);
+      Serial.println("---------");
+    }
+  }
+  /*
+  free(display);
+  for (int r = 0; r < m_rows; ++r) {
+    free(output[r]);
+  }
+  free(output);
   */
 }
 
-bool bitmap::generate_sequence_v(int iterations, int r, int c) {
-	int len = m_msg_len / m_columns;
-	m_seq_len = len + iterations;
-	char* output = new char[m_seq_len+1];
-
+bool* bitmap::get_sequence_v(int iterations, int r, int c) {
 	if (m_orientation) { // vertical
-		bool* parr = new bool[m_seq_len];
+    int len = m_msg_len / m_columns;
+    Serial.println(len);
+    m_seq_len = len + iterations;
+    char* output = new char[m_seq_len+1];
+
+		bool* parr = new bool[m_seq_len+1];
 
 		int index = 0;
 		for (int i = m_rows - r; i > 0; --i) {
@@ -186,12 +250,22 @@ bool bitmap::generate_sequence_v(int iterations, int r, int c) {
 
 			++index;
 		}
-		*(output + index) = '\0';
+
+    for (int i = m_seq_len - r; i < m_seq_len; ++i) {
+      *(parr + i) = 0;
+    }
+
+    *(output + index) = '\0';
 
 		Serial.println(output);
+    free(output);
 
-		m_seq_v = parr;
+    return parr;
 	} else { // horizontal
+    int len = m_msg_len / (m_rows+1);
+    m_seq_len = len + iterations;
+    char* output = new char[m_seq_len+1];
+
 		bool* parr = new bool[m_seq_len];
 
 		int index = 0;
@@ -201,7 +275,7 @@ bool bitmap::generate_sequence_v(int iterations, int r, int c) {
 			++index;
 		}
 
-    int v_index = r*m_row_len;
+    int v_index = r*(m_row_len+1);
     Serial.println(v_index);
 		while (index < m_row_len+iterations) {
 			*(parr + index) = *(m_msg_v + v_index);
@@ -214,11 +288,17 @@ bool bitmap::generate_sequence_v(int iterations, int r, int c) {
 
 			++index;
 		}
-		*(output + index) = '\0';
+
+    for (int i = m_seq_len - c; i < m_seq_len; ++i) {
+      *(parr + i) = 0;
+    }
+
+    *(output + index) = '\0';
 
 		Serial.println(output);
+    free(output);
 
-		m_seq_v = parr;
+    return parr;
   }
 }
 
@@ -231,6 +311,14 @@ void bitmap::do_something(bool on, uint32_t color) {
 		Serial.println("Off!");
 	}
 	m_strip->show();
+}
+
+bool bitmap::generate_sequence_v(int iterations, int r, int c) {
+  if (m_msg_v != nullptr) {
+    m_seq_v = get_sequence_v(iterations, r, c);
+    return true;
+  }
+  return false;
 }
 
 void bitmap::show_sequence_delay(long interval_ms, uint32_t color) {
@@ -355,8 +443,10 @@ void bitmap::show_sequence_scroll_nodelay(long interval_ms, uint32_t color) {
   m_strip->show(); */
 }
 
-bitmap::bitmap(int length, int width, Adafruit_NeoPixel* strip) {
-	m_msg_v = nullptr;
+bitmap::bitmap(int length, int width, Adafruit_NeoPixel* strip, ORIENTATION orientation) {
+  m_orientation = orientation;
+
+  m_msg_v = nullptr;
 	m_seq_v = nullptr;
 
 	m_strip = strip;
@@ -370,13 +460,10 @@ bitmap::bitmap(int length, int width, Adafruit_NeoPixel* strip) {
 	}
 
 	if (m_columns == 3 & m_rows == 5) {
-		m_orientation = VERTICAL;
     charDict = create_charMap35();
   } else if (m_columns == 4 & m_rows == 5) {
-    m_orientation = HORIZONTAL;
     charDict = create_charMap45();
   } else if (m_columns == 5 & m_rows == 5) {
-    m_orientation = VERTICAL;
     charDict = create_charMap55();
   }
 }
