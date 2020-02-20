@@ -10,7 +10,7 @@
 #include <list>
 #include <tuple>
 #include "bitmap.h"
-#define MY_ROLE 3
+#define MY_ROLE 17
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -18,23 +18,9 @@
 #define LED_COUNT 12
 #define NUM_ROWS 3
 #define NUM_COLS 5
-/*
-namespace patch
-{
-    template < typename T > std::string to_string( const T& n )
-    {
-        std::ostringstream stm ;
-        stm << n ;
-        return stm.str() ;
-    }
-}
-*/
-
 struct Colors{
 unsigned int r,b,g;
 };
-
-
 class CommandHandler;
 std::map<String, int> LocationArgIndex;
 std::map<std::pair<int,int>, CommandHandler*> MyLEDBoards;

@@ -103,13 +103,20 @@ void loop() {
     Serial.print(messageTemp);
     std::vector<String> messageVec = my_split(messageTemp.c_str());
     for (std::vector<String>::iterator it = messageVec.begin() ; it != messageVec.end(); ++it){
-      bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
-      if (valid_cmd)  {
-        myCommandHandler.handle_command(std::string((*it).c_str()));
+      //bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
+      std::string cmd_name = std::string(it->c_str());
+      //Serial.println(cmd_name.c_str());
+      cmd_name = cmd_name.substr(0, cmd_name.find("/"));
+      Serial.println(cmd_name.c_str());
+      bool valid_cmd = myCommandHandler.commandsTable.count(String(cmd_name.c_str())) > 0;
+      //Serial.println(valid_cmd);
+      if (valid_cmd || it->length() == 1)  {
+        Serial.println("Handling command ...");
+        myCommandHandler.handle_command(std::string(it->c_str()));
       }
       else{
         myCommandHandler.blink();
-        Serial.print("Got an invalid command");
+        Serial.print("Got an invalid command \n");
         Serial.print((*it).c_str());
         String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
         test_pub.publish(error.c_str());
