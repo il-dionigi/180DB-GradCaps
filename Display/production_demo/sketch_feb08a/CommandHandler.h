@@ -11,7 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 14
+#define MY_ROLE 1
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -120,7 +120,7 @@ class CommandHandler{
       Serial.println("Generated Message Successfully!");  
     }
     void bm_gen_seq(std::vector<String> & input){
-      _bitmap.generate_sequence_v(String(input[0].c_str()).toInt(), x, y);
+      _bitmap.generate_sequence_v(String(input[0].c_str()).toInt(), y, x);
     }
     void bm_show_seq(std::vector<String> & input){
       //Color 
