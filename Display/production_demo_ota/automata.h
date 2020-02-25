@@ -26,7 +26,7 @@ void automata(Adafruit_NeoPixel *strip, uint32_t color, int x, int y, unsigned c
 
   long start = millis();
 
-  while(millis() - start < 2000){
+  while(millis() - start < 400){
     if(a[loc[!axis]] > 0){
       for(i = 1; i < a[loc[!axis]]; i++){
         
@@ -63,9 +63,7 @@ void automata(Adafruit_NeoPixel *strip, uint32_t color, int x, int y, unsigned c
     c = a;
     a = b;
     b = c;
-
+    delay(100);
     // Display delay
-    start = millis();
-    while(millis()-start < 100){}
   }
 }

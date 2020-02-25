@@ -1,5 +1,27 @@
 void createUI(ControlP5 cp5, PFont font) {
-
+int publish_height = 280;
+int row_col_height = 120;
+DropdownList droplist = cp5.addDropdownList("CommandsList").setPosition(460 , 210);
+ 
+  // add items to the dropdownlist
+  
+  droplist.addItem("WifiUpdate", 0);
+  droplist.addItem("ShowLED", 1);
+  droplist.addItem("ShowAllLEDs", 2);
+  droplist.addItem("Rainbow", 3);
+  droplist.addItem("TheaterChase", 4);
+  droplist.addItem("TheaterChaseRainbow", 5);
+  droplist.addItem("UpdateLoc", 6);
+  droplist.addItem("BitmapGenMsgV", 7);
+  droplist.addItem("BitmapGenMsgH", 8);
+  droplist.addItem("BitmapGenSeq", 9);
+  droplist.addItem("BitmapShowSeq", 10);
+  droplist.addItem("StoreFrame", 11);
+  droplist.addItem("StartFrames", 12);
+  droplist.addItem("Auto", 13);
+  droplist.addItem("StopWifiUpdate", 14);
+  droplist.addItem("UpdateGridSize", 15);
+  droplist.addItem("UpdateWifiAll", 16);
   cp5.addTextfield("ID")
     .setBroadcast(false)
     .setPosition(30, 30)
@@ -11,15 +33,25 @@ void createUI(ControlP5 cp5, PFont font) {
     ;
 
   cp5.addTextfield("ROW")
-    .setPosition(30, 120)
+    .setPosition(30, row_col_height)
     .setSize(100, 40)
     .setFont(createFont("arial", 20))
     ;
 
   cp5.addTextfield("COL")
-    .setPosition(160, 120)
+    .setPosition(160, row_col_height)
     .setSize(40, 40)
     .setFont(createFont("arial", 20))
+    ;
+  cp5.addTextfield("#Rows")
+    .setPosition(220, row_col_height)
+    .setSize(40, 40)
+    .setFont(createFont("arial", 14))
+    ;
+  cp5.addTextfield("#Cols")
+    .setPosition(280, row_col_height)
+    .setSize(40, 40)
+    .setFont(createFont("arial", 14))
     ;
   
   cp5.addTextfield("R-value")
@@ -44,7 +76,7 @@ void createUI(ControlP5 cp5, PFont font) {
     ;
   
   cp5.addTextfield("CustomMSG")
-    .setPosition(400, 120)
+    .setPosition(400, row_col_height)
     .setSize(300, 40)
     .setFont(createFont("arial", 20))
     .setAutoClear(false)
@@ -54,7 +86,7 @@ void createUI(ControlP5 cp5, PFont font) {
     .setLabel("SendMSG")
     .setBroadcast(true)
     .setValue(0)
-    .setPosition(400, 180)
+    .setPosition(400, 210)
     .setSize(40, 40)
     .setVisible(true)
     .setBroadcast(true);
@@ -74,8 +106,8 @@ void createUI(ControlP5 cp5, PFont font) {
     .setLabel("Publish")
     .setBroadcast(false)
     .setValue(0)
-    .setPosition(70, 260)
-    .setSize(150, 40)
+    .setPosition(10, publish_height)
+    .setSize(100, 40)
     .setVisible(true)
     .setBroadcast(true)
     ;   
@@ -84,7 +116,7 @@ void createUI(ControlP5 cp5, PFont font) {
     .setLabel("R")
     .setBroadcast(false)
     .setValue(0)
-    .setPosition(60, 280)
+    .setPosition(120, publish_height)
     .setSize(40, 40)
     .setColorForeground(color(255, 0, 0))
     .setColorBackground(color(255, 0, 0))
@@ -93,11 +125,23 @@ void createUI(ControlP5 cp5, PFont font) {
     .setBroadcast(true)
     ;   
 
+  cp5.addButton("DropSND")
+    .setLabel("DropSND")
+    .setBroadcast(false)
+    .setValue(0)
+    .setPosition(280, publish_height)
+    .setSize(80, 40)
+    .setColorForeground(color(100, 0, 100))
+    .setColorBackground(color(100, 0, 100))
+    .setColorActive(color(100, 0, 100))
+    .setVisible(true)
+    .setBroadcast(true)
+    ;   
   cp5.addButton("green_button")
     .setLabel("G")
     .setBroadcast(false)
     .setValue(0)
-    .setPosition(120, 280)
+    .setPosition(170, publish_height)
     .setSize(40, 40)
     .setColorForeground(color(0, 255, 0))
     .setColorBackground(color(0, 255, 0))
@@ -110,7 +154,7 @@ void createUI(ControlP5 cp5, PFont font) {
     .setLabel("B")
     .setBroadcast(false)
     .setValue(0)
-    .setPosition(180, 280)
+    .setPosition(220, publish_height)
     .setSize(40, 40)
     .setColorForeground(color(0, 0, 255))
     .setColorBackground(color(0, 0, 255))

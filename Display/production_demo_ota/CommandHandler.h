@@ -18,8 +18,8 @@
 #define OTA_FLAG 2
 #define LED_PIN D4
 #define LED_COUNT 12
-#define NUM_ROWS 5 //MAKE SURE TO CHANGE THIS IF SIZE EVER CHANGES
-#define NUM_COLS 5
+int NUM_ROWS = 5;
+int NUM_COLS = 5;
 int flag_ota_program = 0;
 struct Colors{
 unsigned int r,b,g;
@@ -77,9 +77,18 @@ class CommandHandler{
       commandsTable["StoreFrame"] = &CommandHandler::store_frame;
       commandsTable["StartFrames"] = &CommandHandler::show_frames;
       commandsTable["Auto"] = &CommandHandler::call_automata;
-      commandsTable["WifiUpdate"] = &CommandHandler::update_wifi;
+      commandsTable["UpdateWifi"] = &CommandHandler::update_wifi;
       commandsTable["StopWifiUpdate"] = &CommandHandler::stop_wifi_update;
+      commandsTable["UpdateGridSize"] = &CommandHandler::update_grid_size;
+      commandsTable["UpdateWifiAll"] = &CommandHandler::update_wifi_all;
       return;
+    }
+   void update_wifi_all(std::vector<String> & input){
+      flag_ota_program = 1; 
+    }
+    void update_grid_size(std::vector<String> & input){
+      NUM_ROWS = input[0].toInt();
+      NUM_COLS = input[1].toInt();  
     }
     void update_wifi(std::vector<String> & input){
         bool valid_loc = check_vector_loc(input);
