@@ -18,8 +18,29 @@ void createUI(ControlP5 cp5, PFont font) {
 
   cp5.addTextfield("COL")
     .setPosition(160, 120)
-    .setSize(100, 40)
+    .setSize(40, 40)
     .setFont(createFont("arial", 20))
+    ;
+  
+  cp5.addTextfield("R-value")
+    .setPosition(20, 200)
+    .setSize(40, 40)
+    .setFont(createFont("arial", 10))
+    ;
+   cp5.addTextfield("B-value")
+    .setPosition(80, 200)
+    .setSize(40, 40)
+    .setFont(createFont("arial", 10))
+    ;
+  cp5.addTextfield("G-value")
+    .setPosition(140, 200)
+    .setSize(40, 40)
+    .setFont(createFont("arial", 10))
+    ;
+  cp5.addTextfield("WaitTime")
+    .setPosition(200, 200)
+    .setSize(40, 40)
+    .setFont(createFont("arial", 10))
     ;
   
   cp5.addTextfield("CustomMSG")
@@ -53,7 +74,7 @@ void createUI(ControlP5 cp5, PFont font) {
     .setLabel("Publish")
     .setBroadcast(false)
     .setValue(0)
-    .setPosition(70, 200)
+    .setPosition(70, 260)
     .setSize(150, 40)
     .setVisible(true)
     .setBroadcast(true)

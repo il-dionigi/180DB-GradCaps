@@ -11,7 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 0
+#define MY_ROLE 24
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -38,7 +38,6 @@ class CommandHandler{
     y = EEPROM.read(Y_ADDR);
     role_id = MY_ROLE;
     init_commands_with_args();
-    Serial.println(String("RoleID: ") + String(MY_ROLE))
   }
   CommandHandler(int x, int y, int role_id) : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL){
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
@@ -230,9 +229,9 @@ class CommandHandler{
     }
     void show_led(std::vector<String> & input){
        if (check_vector_loc(input)){
-          int r = String(input[0].c_str()).toInt();
-          int b = String(input[1].c_str()).toInt();
-          int g = String(input[2].c_str()).toInt();  
+          int r = String(input[2].c_str()).toInt();
+          int b = String(input[3].c_str()).toInt();
+          int g = String(input[4].c_str()).toInt();  
           show_led_int(r,b,g);
       }
     }
@@ -400,6 +399,7 @@ class CommandHandler{
     }
     void updateLoc(std::vector<String> & input){
       if(input[0].toInt() == this->role_id){
+         Serial.println(String("RoleID: ") + String(MY_ROLE) + "x: " + String(x) + " y: " + String(y));
         this->x = input[1].toInt();
         this->y = input[2].toInt();
         EEPROM.write(X_ADDR, this->x);
@@ -409,6 +409,7 @@ class CommandHandler{
    void updateAllLoc(std::vector<String> & input){
       for(int i = input.size() - 1; i--; i >= 0){
         if(input[i-2].toInt() == this->role_id){
+          Serial.println(String("RoleID: ") + String(MY_ROLE) + "x: " + String(x) + " y: " + String(y));
           this->x = input[i-1].toInt();
           this->y = input[i].toInt();
           EEPROM.write(X_ADDR, this->x);
