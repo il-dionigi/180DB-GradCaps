@@ -11,10 +11,11 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 1
+#define MY_ROLE 0
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
+#define OTA_FLAG 2
 #define LED_PIN D4
 #define LED_COUNT 12
 #define NUM_ROWS 5 //MAKE SURE TO CHANGE THIS IF SIZE EVER CHANGES
@@ -37,6 +38,7 @@ class CommandHandler{
     y = EEPROM.read(Y_ADDR);
     role_id = MY_ROLE;
     init_commands_with_args();
+    Serial.println(String("RoleID: ") + String(MY_ROLE))
   }
   CommandHandler(int x, int y, int role_id) : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL){
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
@@ -76,7 +78,7 @@ class CommandHandler{
       commandsTable["StoreFrame"] = &CommandHandler::store_frame;
       commandsTable["StartFrames"] = &CommandHandler::show_frames;
       commandsTable["Auto"] = &CommandHandler::call_automata;
-      commandsTable["UpdateWifi"] = &CommandHandler::update_wifi;
+      commandsTable["WifiUpdate"] = &CommandHandler::update_wifi;
       commandsTable["StopWifiUpdate"] = &CommandHandler::stop_wifi_update;
       return;
     }
