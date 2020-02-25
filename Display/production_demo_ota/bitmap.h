@@ -1,7 +1,7 @@
 // TODO: Add destructor!
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#include <SimpleMap.h>
+#include "SimpleMap.h"
 
 enum ORIENTATION { HORIZONTAL = 0, VERTICAL = 1 };
 
