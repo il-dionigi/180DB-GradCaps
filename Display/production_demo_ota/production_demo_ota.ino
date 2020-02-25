@@ -86,6 +86,9 @@ void setup() {
 
   //--OTA--
 
+  // Hostname defaults to esp8266-[ChipID]
+  ArduinoOTA.setHostname(String(MY_ROLE));  
+
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
   });
