@@ -17,8 +17,9 @@
 #define Y_ADDR 1
 #define LED_PIN D4
 #define LED_COUNT 12
-#define NUM_ROWS 3
+#define NUM_ROWS 5 //MAKE SURE TO CHANGE THIS IF SIZE EVER CHANGES
 #define NUM_COLS 5
+int flag_ota_program = 0;
 struct Colors{
 unsigned int r,b,g;
 };
@@ -75,8 +76,22 @@ class CommandHandler{
       commandsTable["StoreFrame"] = &CommandHandler::store_frame;
       commandsTable["StartFrames"] = &CommandHandler::show_frames;
       commandsTable["Auto"] = &CommandHandler::call_automata;
+      commandsTable["UpdateWifi"] = &CommandHandler::update_wifi;
+      commandsTable["StopWifiUpdate"] = &CommandHandler::stop_wifi_update;
       return;
     }
+    void update_wifi(std::vector<String> & input){
+        bool valid_loc = check_vector_loc(input);
+        if(valid_loc){
+          flag_ota_program = 1;
+        }
+    }
+    void stop_wifi_update(std::vector<String> & input){
+        bool valid_loc = check_vector_loc(input);
+        if(valid_loc){
+          flag_ota_program = 0;
+        }
+      }
     void call_automata(std::vector<String> & input){
       int r = input[0].toInt();
       int b = input[1].toInt();
@@ -330,7 +345,7 @@ class CommandHandler{
   // Rainbow cycle along whole strip. Pass delay time (in ms) between frames.
   void rainbow(std::vector<String> & input) {
     if(check_vector_loc(input)){
-      int wait = String(input[3].c_str()).toInt();
+      int wait = String(input[2].c_str()).toInt();
       // Hue of first pixel runs 5 complete loops through the color wheel.
       // Color wheel has a range of 65536 but it's OK if we roll over, so
       // just count from 0 to 5*65536. Adding 256 to firstPixelHue each time

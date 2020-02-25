@@ -21,7 +21,34 @@ void createUI(ControlP5 cp5, PFont font) {
     .setSize(100, 40)
     .setFont(createFont("arial", 20))
     ;
-
+  
+  cp5.addTextfield("CustomMSG")
+    .setPosition(400, 120)
+    .setSize(300, 40)
+    .setFont(createFont("arial", 20))
+    .setAutoClear(false)
+    ;
+    
+  cp5.addButton("SendMSG")
+    .setLabel("SendMSG")
+    .setBroadcast(true)
+    .setValue(0)
+    .setPosition(400, 180)
+    .setSize(40, 40)
+    .setVisible(true)
+    .setBroadcast(true);
+    
+  
+  cp5.addButton("HardSyncAll")
+    .setLabel("HardSync")
+    .setBroadcast(false)
+    .setValue(0)
+    .setPosition(400, 60)
+    .setSize(40, 40)
+    .setVisible(true)
+    .setBroadcast(true)
+    ;   
+    
   cp5.addButton("publish")
     .setLabel("Publish")
     .setBroadcast(false)

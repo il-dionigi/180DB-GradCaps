@@ -4,7 +4,26 @@ public void publish(int theValue) {
   int COL_input = PApplet.parseInt(cp5.get(Textfield.class, "COL").getText());
 
   String tx = "UpdateLoc/" + ID_input + "/" + ROW_input + "/"  + COL_input + "/";
-  
+
+  //println("Sent: " + tx);
+  //client.publish("test_channel", tx);
+
+  //cp5.get(Textfield.class,"ID").clear();
+  //cp5.get(Textfield.class,"ROW").clear();
+  //cp5.get(Textfield.class,"COL").clear();
+}
+
+public void CustomMSG(String theValue){
+client.publish("test_channel", theValue);
+}
+
+public void SendMSG(int theValue){
+ String msg = cp5.get(Textfield.class, "CustomMSG").getText();
+ client.publish("test_channel", msg);
+}
+
+public void HardSyncAll(int theValue){
+  String tx;
   tx = "UpdateLoc/0/0/0/";
   delay(100);
   client.publish("test_channel", tx);
@@ -84,18 +103,6 @@ public void publish(int theValue) {
   tx = "UpdateLoc/24/4/4/";
   delay(100);
   client.publish("test_channel", tx);
-
-
-
-
-
-
-  //println("Sent: " + tx);
-  //client.publish("test_channel", tx);
-
-  //cp5.get(Textfield.class,"ID").clear();
-  //cp5.get(Textfield.class,"ROW").clear();
-  //cp5.get(Textfield.class,"COL").clear();
 }
 
 public void red_button(int theValue) {

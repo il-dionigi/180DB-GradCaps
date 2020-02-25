@@ -120,8 +120,9 @@ void setup() {
 uint32_t x = 0;
 
 void loop() {
-  ArduinoOTA.handle();
-  
+  if(flag_ota_program){
+    ArduinoOTA.handle();
+  }
   // Ensure the connection to the MQTT server is alive (this will make the first
   // connection and automatically reconnect when disconnected).  See the MQTT_connect
   // function definition further below.
@@ -168,7 +169,7 @@ void loop() {
 // Should be called in the loop function and it will take care if connecting.
 void MQTT_connect() {
   int8_t ret;
-
+  
   // Stop if already connected.
   if (mqtt.connected()) {
     return;
