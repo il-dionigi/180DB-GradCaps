@@ -17,7 +17,8 @@ public void CustomMSG(String theValue){
 client.publish("test_channel", theValue);
 }
 
-public void CommandsList(String theValue){
+public void CommandsList(int Value){
+  String theValue = cp5.get(ScrollableList.class, "dropdown").getItem(Value).get("name").toString();
   String COL_SIZE = "5";
   String ROW_SIZE = "5";
   String ID_INPUT  = (cp5.get(Textfield.class, "ID").getText());
@@ -28,6 +29,7 @@ public void CommandsList(String theValue){
   String B = cp5.get(Textfield.class, "B-value").getText();
   String WaitTime = cp5.get(Textfield.class, "Waittime").getText();
   String out = "";
+  println(theValue);
   if(theValue == "UpdateWifi"){out = String.format("UpdateWifi/%s/%s/", COL_INPUT, ROW_INPUT);}
   else if(theValue == "ShowLED"){out = String.format("ShowLED/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B);}
   else if(theValue == "ShowAllLEDs"){out = String.format("ShowAllLEDs", R, G, B);}
