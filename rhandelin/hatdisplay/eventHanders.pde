@@ -18,7 +18,7 @@ client.publish("test_channel", theValue);
 }
 
 public void CommandsList(int Value){
-  String theValue = cp5.get(ScrollableList.class, "dropdown").getItem(Value).get("name").toString();
+  //String theValue = cp5.get(ScrollableList.class, "dropdown").getItem(Value).get("name").toString();
   String COL_SIZE = "5";
   String ROW_SIZE = "5";
   String ID_INPUT  = (cp5.get(Textfield.class, "ID").getText());
@@ -27,26 +27,27 @@ public void CommandsList(int Value){
   String R = cp5.get(Textfield.class, "R-value").getText();
   String G = cp5.get(Textfield.class, "G-value").getText();
   String B = cp5.get(Textfield.class, "B-value").getText();
-  String WaitTime = cp5.get(Textfield.class, "Waittime").getText();
+  String WaitTime = cp5.get(Textfield.class, "WaitTime").getText();
   String out = "";
-  println(theValue);
-  if(theValue == "UpdateWifi"){out = String.format("UpdateWifi/%s/%s/", COL_INPUT, ROW_INPUT);}
-  else if(theValue == "ShowLED"){out = String.format("ShowLED/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B);}
-  else if(theValue == "ShowAllLEDs"){out = String.format("ShowAllLEDs", R, G, B);}
-  else if(theValue == "Rainbow"){out = String.format("Rainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
-  else if(theValue == "TheaterChase"){out = String.format("TheaterChase/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G, WaitTime);}
-  else if(theValue == "TheaterChaseRainbow"){out = String.format("TheaterChaseRainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
-  else if(theValue == "UpdateLoc"){out = String.format("UpdateLoc/%s/%s/%s/", ID_INPUT, COL_INPUT, ROW_INPUT);}
-  else if(theValue == "BitmapGenMsgV"){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
-  else if(theValue == "BitmapGenMsgH"){out = String.format("BitmapGenMsgH/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
-  else if(theValue == "BitmapGenSeq"){out = String.format("BitmapGenSeq/%s/", "2");}
-  else if(theValue == "BitmapShowSeq"){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
-  else if(theValue == "StoreFrame"){out = String.format("StoreFrame/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G);}
-  else if(theValue == "StartFrames"){out = "StartFrames";}
-  else if(theValue == "Auto"){out="Auto";}
-  else if(theValue == "StopWifiUpdate"){out="StopWifiUpdate";}
-  else if(theValue == "UpdateGridSize"){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
-  else if(theValue == "UpdateWifiAll"){out="UpdateWifiAll";}
+  println(Value);
+  if(Value == 0){out = String.format("UpdateWifi/%s/%s/", COL_INPUT, ROW_INPUT);}
+  else if(Value == 1){out = String.format("ShowLED/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B);}
+  else if(Value == 2){out = String.format("ShowAllLEDs", R, G, B);}
+  else if(Value == 3){out = String.format("Rainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
+  else if(Value == 4){out = String.format("TheaterChase/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G, WaitTime);}
+  else if(Value == 5){out = String.format("TheaterChaseRainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
+  else if(Value == 6){out = String.format("UpdateLoc/%s/%s/%s/", ID_INPUT, COL_INPUT, ROW_INPUT);}
+  else if(Value == 7){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
+  else if(Value == 8){out = String.format("BitmapGenMsgH/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
+  else if(Value == 9){out = String.format("BitmapGenSeq/%s/", "2");}
+  else if(Value == 10){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
+  else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G);}
+  else if(Value == 12){out = "StartFrames";}
+  else if(Value == 13){out="Auto";}
+  else if(Value == 14){out="StopWifiUpdate";}
+  else if(Value == 15){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
+  else if(Value == 16){out="UpdateWifiAll";}
+  println(Value);
   client.publish("test_channel", out);
 }
 

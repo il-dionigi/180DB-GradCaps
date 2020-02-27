@@ -15,7 +15,7 @@ void setup() {
   client = new MQTTClient(this);
   createUI(cp5, font);
   try {
-    client.connect("mqtt://192.168.0.100", "processing");
+    client.connect("mqtt://192.168.0.100");
   }
   catch(Exception e) {
   }
