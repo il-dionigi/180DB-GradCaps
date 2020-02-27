@@ -47,7 +47,6 @@ public void CommandsList(int Value){
   else if(theValue == "StopWifiUpdate"){out="StopWifiUpdate";}
   else if(theValue == "UpdateGridSize"){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
   else if(theValue == "UpdateWifiAll"){out="UpdateWifiAll";}
-  println(theValue);
   client.publish("test_channel", out);
 }
 
