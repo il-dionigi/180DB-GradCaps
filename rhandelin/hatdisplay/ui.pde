@@ -83,8 +83,8 @@ DropdownList droplist = cp5.addDropdownList("CommandsList").setPosition(460 , 21
     ;
     
   cp5.addButton("SendMSG")
+    .setBroadcast(false)
     .setLabel("SendMSG")
-    .setBroadcast(true)
     .setValue(0)
     .setPosition(400, 210)
     .setSize(40, 40)
