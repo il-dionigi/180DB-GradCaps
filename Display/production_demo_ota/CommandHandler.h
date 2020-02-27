@@ -89,6 +89,7 @@ class CommandHandler{
     void update_grid_size(std::vector<String> & input){
       NUM_ROWS = input[0].toInt();
       NUM_COLS = input[1].toInt();  
+      _bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL);
     }
     void update_wifi(std::vector<String> & input){
         bool valid_loc = check_vector_loc(input);
