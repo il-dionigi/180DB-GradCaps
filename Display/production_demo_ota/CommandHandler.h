@@ -23,6 +23,7 @@ int NUM_COLS = 5;
 int flag_ota_program = 0;
 struct Colors{
 unsigned int r,b,g,wait;
+String func;
 };
 class CommandHandler;
 std::map<String, int> LocationArgIndex;
@@ -74,15 +75,15 @@ class CommandHandler{
       commandsTable["BitmapGenMsgH"] = &CommandHandler::bm_genmsg_h; //Called as func/x/y/string
       commandsTable["BitmapGenSeq"] = &CommandHandler::bm_gen_seq; //called as func/x/y/string
       commandsTable["BitmapShowSeq"] = &CommandHandler::bm_show_seq; //called as func/x/y/string
-      commandsTable["StoreFrame"] = &CommandHandler::store_frame;
-      commandsTable["StartFrames"] = &CommandHandler::show_frames;
+      commandsTable["StoreFrame"] = &CommandHandler::store_frame;   //Called as func/function_to_call/args
+      commandsTable["StartFrames"] = &CommandHandler::show_frames;  
+      commandsTable["ResetFrames"] = &CommandHandler::reset_frames; //Called as func/
       commandsTable["Auto"] = &CommandHandler::call_automata;
       commandsTable["UpdateWifi"] = &CommandHandler::update_wifi; // Called as func / x / y
       commandsTable["StopWifiUpdate"] = &CommandHandler::stop_wifi_update; //Called as func / x / y
       commandsTable["UpdateGridSize"] = &CommandHandler::update_grid_size; //Called as func / rows / cols
       commandsTable["UpdateWifiAll"] = &CommandHandler::update_wifi_all; // Called as func/
       commandsTable["StopWifiAll"] = &CommandHandler::stop_wifi_all;
-      
       return;
     }
    void update_wifi_all(std::vector<String> & input){
@@ -115,28 +116,33 @@ class CommandHandler{
       automata(&strip, strip.Color(r, b, g), this->x, this->y,
       input[3].c_str()[0]);
     }
+    void reset_frames(std::vector<String> & input){
+      FramesList.clear();
+      return;}
     void store_frame(std::vector<String> & input){
       //This vector should be somewhat huge, in the following structure:
       //String 0: Show_LED/x/y/c0/c1/c2
       bool myFrame = check_vector_loc(input);
       if(myFrame){
         Colors colorObj;
-        colorObj.r = String(input[2]).toInt();
-        colorObj.b = String(input[3]).toInt();
-        colorObj.g = String(input[4]).toInt();
-        colorObj.wait = String(input[5]).toInt();
+        colorObj.func = String(input[2]).toInt();
+        colorObj.r = String(input[3]).toInt();
+        colorObj.b = String(input[4]).toInt();
+        colorObj.g = String(input[5]).toInt();
+        colorObj.wait = String(input[6]).toInt();
         FramesList.push_back(colorObj);
         //CommandsList.push_back(input);
       }
     }
     void show_frames(std::vector<String> & input){
       for (std::list<Colors>::iterator it = FramesList.begin() ; it != FramesList.end(); ++it){
-        unsigned int r, g, b;
+        unsigned int r, g, b, wait;
         r = it->r;
         g = it->g;
         b = it->b;
-        show_led_int(r,g,b);
-        delay(it->wait);
+        wait = it -> wait;
+        String cmd_parsed = it->func + "/" + String(r) + "/" + String(b) + "/" + String(g) + "/" + String(wait) + "/";
+        this->handle_command(std::string(cmd_parsed.c_str()));
       }
     }
     void bm_genmsg_v(std::vector<String> & input){
@@ -482,5 +488,19 @@ void init_location_arg_index(){
   LocationArgIndex["BitmapGenSeq"] = 1; //called as func/x/y/string
   LocationArgIndex["BitmapShowSeq"] = 1; //called as func/x/y/string
   //LocationArgIndex["Auto"] = &(automata);
+}
+
+std::vector<String> my_split(const char * sentence)
+{
+  std::stringstream ss(sentence);
+  std::string to;
+  std::vector<String> output;
+  if (sentence != NULL)
+  {
+    while(std::getline(ss,to,'\n')){
+      output.push_back(String(to.c_str()));
+    }
+  }
+  return output;
 }
 //Currently only one support for one led board

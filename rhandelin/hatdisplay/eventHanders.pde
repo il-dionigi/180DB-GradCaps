@@ -1,3 +1,5 @@
+int GLOBAL_CURR_DROP_INDEX = 0;
+
 public void publish(int theValue) {
   int ID_input  = PApplet.parseInt(cp5.get(Textfield.class, "ID").getText());
   int ROW_input = PApplet.parseInt(cp5.get(Textfield.class, "ROW").getText());
@@ -27,6 +29,7 @@ public void CommandsList(int Value){
   String R = cp5.get(Textfield.class, "R-value").getText();
   String G = cp5.get(Textfield.class, "G-value").getText();
   String B = cp5.get(Textfield.class, "B-value").getText();
+  String FUNC = cp5.get(Textfield.class, "Func").getText();
   String WaitTime = cp5.get(Textfield.class, "WaitTime").getText();
   String out = "";
   println(Value);
@@ -41,14 +44,16 @@ public void CommandsList(int Value){
   else if(Value == 8){out = String.format("BitmapGenMsgH/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
   else if(Value == 9){out = String.format("BitmapGenSeq/%s/", "2");}
   else if(Value == 10){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
-  else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G);}
+  else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/%s/", FUNC, COL_INPUT, ROW_INPUT, R, B, G);}
   else if(Value == 12){out = "StartFrames/";}
-  else if(Value == 13){out=String.format("Auto/%s/%s/%s/%s/", R, B, G, WaitTime);}
-  else if(Value == 14){out="StopWifiUpdate/";}
-  else if(Value == 15){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
-  else if(Value == 16){out="UpdateWifiAll/";}
-  else if(Value == 17){out="StopWifiAll/";}
+  else if(Value == 13){out = "ResetFrames/";}
+  else if(Value == 14){out=String.format("Auto/%s/%s/%s/%s/", R, B, G, WaitTime);}
+  else if(Value == 15){out="StopWifiUpdate/";}
+  else if(Value == 16){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
+  else if(Value == 17){out="UpdateWifiAll/";}
+  else if(Value == 18){out="StopWifiAll/";}
   println(Value);
+  GLOBAL_CURR_DROP_INDEX = Value;
   client.publish("test_channel", out);
 }
 
@@ -138,6 +143,11 @@ public void HardSyncAll(int theValue){
   tx = "UpdateLoc/24/4/4/";
   
   client.publish("test_channel", tx);
+}
+
+public void DropSND(int theValue) {
+  println("DROPSND");
+  CommandsList(GLOBAL_CURR_DROP_INDEX);
 }
 
 public void red_button(int theValue) {

@@ -18,11 +18,12 @@ DropdownList droplist = cp5.addDropdownList("CommandsList").setPosition(460 , 21
   droplist.addItem("BitmapShowSeq", 10);
   droplist.addItem("StoreFrame", 11);
   droplist.addItem("StartFrames", 12);
-  droplist.addItem("Auto", 13);
-  droplist.addItem("StopWifiUpdate", 14);
-  droplist.addItem("UpdateGridSize", 15);
-  droplist.addItem("UpdateWifiAll", 16);
-  droplist.addItem("StopWifiAll", 17);
+  droplist.addItem("ResetFrames", 13);
+  droplist.addItem("Auto", 14);
+  droplist.addItem("StopWifiUpdate", 15);
+  droplist.addItem("UpdateGridSize", 16);
+  droplist.addItem("UpdateWifiAll", 17);
+  droplist.addItem("StopWifiAll", 18);
   
   cp5.addTextfield("ID")
     .setBroadcast(false)
@@ -76,7 +77,11 @@ DropdownList droplist = cp5.addDropdownList("CommandsList").setPosition(460 , 21
     .setSize(40, 40)
     .setFont(createFont("arial", 10))
     ;
-  
+ cp5.addTextfield("Func")
+    .setPosition(260, 200)
+    .setSize(100, 40)
+    .setFont(createFont("arial", 10))
+    ;
   cp5.addTextfield("CustomMSG")
     .setPosition(400, row_col_height)
     .setSize(300, 40)

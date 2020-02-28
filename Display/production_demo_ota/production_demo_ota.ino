@@ -1,23 +1,11 @@
-//#include <PubSubClient.h>
+#include <PubSubClient.h>
 #include <stdio.h>
 #include "CommandHandler.h"
-#include "Adafruit_MQTT.h"
-#include "Adafruit_MQTT_Client.h"
+//#include "Adafruit_MQTT.h"
+//#include "Adafruit_MQTT_Client.h"
 #include <sstream>
 #include <vector>
 #include <iterator>
-//#define WLAN_SSID       "ece_private"
-//#define WLAN_PASS       "uclagradcap"
-#define MQTT_CONN_KEEPALIVE 300
-#define MQTT_DEBUG
-#define WLAN_SSID       "ASUS_50_2G"
-#define WLAN_PASS       "1337h4v3fun#97"
-#define AIO_SERVER      "192.168.50.17"
-//#define AIO_SERVER "192.168.0.100"
-#define AIO_SERVERPORT  1883
-#define CHANNEL "test_channel"
-#define RESP_CHANNEL "client_response"
-
 #include <ESP8266WiFi.h>
 
 //OTA Dependencies
@@ -25,60 +13,60 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-//using namespace std;
+//#define WLAN_SSID       "ece_private"
+//#define WLAN_PASS       "uclagradcap"
+//#define AIO_SERVER      "192.168.0.100"
+#define WLAN_SSID       "ASUS_50_2G"
+#define WLAN_PASS       "1337h4v3fun#97"
+#define AIO_SERVER      "192.168.50.17"
+#define AIO_SERVERPORT  1883
+#define CHANNEL "test_channel"
+#define PUB_CHANNEL "responses"
+using namespace std;
 WiFiClient client;
+PubSubClient mqtt(client);
 CommandHandler myCommandHandler;
-// Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-Adafruit_MQTT_Client mqtt(&client, AIO_SERVER, AIO_SERVERPORT);
-/****************************** Feeds ***************************************/
-
-// Setup a feed called 'test' for subscribing to changes.
-Adafruit_MQTT_Subscribe test = Adafruit_MQTT_Subscribe(&mqtt, CHANNEL);
-Adafruit_MQTT_Publish test_pub = Adafruit_MQTT_Publish(&mqtt, RESP_CHANNEL);
-
-std::vector<String> my_split(const char * sentence)
-{
-  std::stringstream ss(sentence);
-  std::string to;
-  std::vector<String> output;
-  if (sentence != NULL)
-  {
-    while(std::getline(ss,to,'\n')){
-      output.push_back(String(to.c_str()));
-    }
-  }
-
-  return output;
+void callback(char* topic, uint8_t* message, unsigned int length) {
+    if (topic == CHANNEL){
+      String messageTemp = String((char *)message);
+      Serial.print(messageTemp);
+      std::vector<String> messageVec = my_split(messageTemp.c_str());
+      for (std::vector<String>::iterator it = messageVec.begin() ; it != messageVec.end(); ++it){
+        //bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
+        std::string cmd_name = std::string(it->c_str());
+        //Serial.println(cmd_name.c_str());
+        cmd_name = cmd_name.substr(0, cmd_name.find("/"));
+        Serial.println(cmd_name.c_str());
+        bool valid_cmd = myCommandHandler.commandsTable.count(String(cmd_name.c_str())) > 0;
+        //Serial.println(valid_cmd);
+        if (valid_cmd || it->length() == 1)  {
+          Serial.println("Handling command ...");
+          myCommandHandler.handle_command(std::string(it->c_str()));
+        }
+        else{
+          myCommandHandler.blink();
+          Serial.print("Got an invalid command \n");
+          Serial.println((*it).c_str());
+          String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
+          mqtt.publish(PUB_CHANNEL, error.c_str());
+        }
+      }
+      mqtt.publish(PUB_CHANNEL, myCommandHandler.get_status().c_str());
+     }
 }
-// Bug workaround for Arduino 1.6.6, it seems to need a function declaration
-// for some reason (only affects ESP8266, likely an arduino-builder bug).
-void MQTT_connect();
-
 void setup() {
+  pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);  
   Serial.begin(115200);
   delay(10);
   myCommandHandler.strip.begin();
+  myCommandHandler.show_led_int(255, 0, 0);
   myCommandHandler.strip.show();
-  myCommandHandler.strip.setBrightness(255);
-  /*
-  myCommandHandler.x = 0;
-  myCommandHandler.y = 0;
-  myCommandHandler._bitmap.generate_msg_v("UCLA");
-  myCommandHandler._bitmap.generate_sequence_v(5, 0, 0);
-  myCommandHandler._bitmap.generate_sequence_v(5, 0, 1);
-  myCommandHandler._bitmap.generate_sequence_v(5, 0, 2);
-  myCommandHandler._bitmap.generate_sequence_v(5, 0, 3);
-  myCommandHandler._bitmap.generate_sequence_v(5, 0, 4);
-  */
-  //bitmap.show_sequence
   delay(10);
-  Serial.println(F("Adafruit MQTT demo"));
-
   // Connect to WiFi access point.
   Serial.println(); Serial.println();
   Serial.print("Connecting to ");
   Serial.println(WLAN_SSID);
-
   WiFi.mode(WIFI_STA);
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
@@ -86,12 +74,9 @@ void setup() {
     Serial.print(".");
   }
   Serial.println();
-
   //--OTA--
-
   // Hostname defaults to esp8266-[ChipID]
   ArduinoOTA.setHostname(String(MY_ROLE).c_str());//String(MY_ROLE));  
-
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
   });
@@ -110,15 +95,16 @@ void setup() {
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
-
   //---
-
   Serial.println("WiFi connected");
   Serial.println("IP address: "); Serial.println(WiFi.localIP());
-
   // Setup MQTT subscription for onoff feed.
-  mqtt.subscribe(&test);
-  MQTT_connect();
+  //mqtt.subscribe(&test);
+  //MQTT_connect();
+  mqtt.setServer(AIO_SERVER, AIO_SERVERPORT);
+  mqtt.setCallback(callback);
+  mqtt.subscribe(CHANNEL);
+  
 }
 
 uint32_t x = 0;
@@ -129,77 +115,39 @@ void loop() {
   if(flag_ota_program){
     ArduinoOTA.handle();
   }
-  // Ensure the connection to the MQTT server is alive (this will make the first
-  // connection and automatically reconnect when disconnected).  See the MQTT_connect
-  // function definition further below.
-  //MQTT_connect();
-
-  // this is our 'wait for incoming subscription packets' busy subloop
-  // try to spend your time here
-
-  Adafruit_MQTT_Subscribe *subscription;
-  while ((subscription = mqtt.readSubscription(5000))) {
-  if (subscription == &test){
-    String messageTemp = String((char *)test.lastread);
-    Serial.print(messageTemp);
-    std::vector<String> messageVec = my_split(messageTemp.c_str());
-    for (std::vector<String>::iterator it = messageVec.begin() ; it != messageVec.end(); ++it){
-      //bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
-      std::string cmd_name = std::string(it->c_str());
-      //Serial.println(cmd_name.c_str());
-      cmd_name = cmd_name.substr(0, cmd_name.find("/"));
-      Serial.println(cmd_name.c_str());
-      bool valid_cmd = myCommandHandler.commandsTable.count(String(cmd_name.c_str())) > 0;
-      //Serial.println(valid_cmd);
-      if (valid_cmd || it->length() == 1)  {
-        Serial.println("Handling command ...");
-        myCommandHandler.handle_command(std::string(it->c_str()));
+  else{
+    mqtt.loop();
+    if(timer - millis() > 1000*60){
+      timer = millis();
+      if (! mqtt.connected()) {
+        reconnect(); //Is this why they keep disconnecting?  
       }
-      else{
-        myCommandHandler.blink();
-        Serial.print("Got an invalid command \n");
-        Serial.print((*it).c_str());
-        String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
-        test_pub.publish(error.c_str());
-      }
-    }
-    test_pub.publish(myCommandHandler.get_status().c_str());
-   }
-  }
-  if(timer - millis() > 1000*60){
-    timer = millis();
-    if (! mqtt.ping()) {
-      mqtt.disconnect(); //Is this why they keep disconnecting?  
-      MQTT_connect();
-      myCommandHandler.blink_color(255, 100, 30, 1000); 
     }
   }
 }
 
 // Function to connect and reconnect as necessary to the MQTT server.
 // Should be called in the loop function and it will take care if connecting.
-void MQTT_connect() {
-  int8_t ret;
-  
-  // Stop if already connected.
-  if (mqtt.connected()) {
-    return;
-  }
-
-  Serial.print("Connecting to MQTT... ");
-
-  uint8_t retries = 3;
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-    Serial.println(mqtt.connectErrorString(ret));
-    Serial.println("Retrying MQTT connection in 5 seconds...");
-    mqtt.disconnect();
-    delay(800);  // wait 5 seconds
-    retries--;
-    if (retries == 0) {
-      // basically die and wait for WDT to reset me
-      while (1);
+void reconnect() {
+  // Loop until we're reconnected
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    // Create a random client ID
+    String clientId = "ESP8266Client-";
+    clientId += String(MY_ROLE, HEX);
+    // Attempt to connect
+    if (mqtt.connect(clientId.c_str())) {
+      Serial.println("connected");
+      // Once connected, publish an announcement...
+      mqtt.publish("outTopic", "hello world");
+      // ... and resubscribe
+      mqtt.subscribe("inTopic");
+      myCommandHandler.blink_color(0, 255, 0, 1000);
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(mqtt.state());
+      Serial.println(" try again in 5 seconds");
+      myCommandHandler.blink_color(255, 0, 0, 1000); //Does internal delays
     }
   }
-  Serial.println("MQTT Connected!");
-  myCommandHandler.show_led_int(0, 0, 100);
 }
