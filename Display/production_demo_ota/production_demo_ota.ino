@@ -70,7 +70,7 @@ void setup() {
   WiFi.mode(WIFI_STA);
   WiFi.begin(WLAN_SSID, WLAN_PASS);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+    myCommandHandler.blink_color(100, 15, 0, 200);
     Serial.print(".");
   }
   Serial.println();
@@ -113,6 +113,7 @@ uint32_t timer = millis();
 
 void loop() {
   if(flag_ota_program){
+    myCommandHandler.set_cyan();
     ArduinoOTA.handle();
   }
   else{
