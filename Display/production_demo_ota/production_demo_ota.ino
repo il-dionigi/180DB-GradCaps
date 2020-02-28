@@ -6,15 +6,18 @@
 #include <sstream>
 #include <vector>
 #include <iterator>
-#define WLAN_SSID       "ece_private"
-#define WLAN_PASS       "uclagradcap"
-//#define WLAN_SSID       "ASUS_50_2G"
-//#define WLAN_PASS       "1337h4v3fun#97"
-//#define AIO_SERVER      "192.168.50.17"
-#define AIO_SERVER "192.168.0.100"
+//#define WLAN_SSID       "ece_private"
+//#define WLAN_PASS       "uclagradcap"
+#define MQTT_CONN_KEEPALIVE 300
+#define MQTT_DEBUG
+#define WLAN_SSID       "ASUS_50_2G"
+#define WLAN_PASS       "1337h4v3fun#97"
+#define AIO_SERVER      "192.168.50.17"
+//#define AIO_SERVER "192.168.0.100"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
 #define RESP_CHANNEL "client_response"
+
 #include <ESP8266WiFi.h>
 
 //OTA Dependencies
@@ -115,6 +118,7 @@ void setup() {
 
   // Setup MQTT subscription for onoff feed.
   mqtt.subscribe(&test);
+  MQTT_connect();
 }
 
 uint32_t x = 0;
@@ -122,22 +126,13 @@ uint32_t x = 0;
 uint32_t timer = millis();
 
 void loop() {
-
-  if(timer - millis() > 1000*60){
-    timer = millis();
-    if (! mqtt.ping()) {
-      mqtt.disconnect(); //Is this why they keep disconnecting?  
-    }
-  }
-
-  
   if(flag_ota_program){
     ArduinoOTA.handle();
   }
   // Ensure the connection to the MQTT server is alive (this will make the first
   // connection and automatically reconnect when disconnected).  See the MQTT_connect
   // function definition further below.
-  MQTT_connect();
+  //MQTT_connect();
 
   // this is our 'wait for incoming subscription packets' busy subloop
   // try to spend your time here
@@ -171,6 +166,14 @@ void loop() {
     test_pub.publish(myCommandHandler.get_status().c_str());
    }
   }
+  if(timer - millis() > 1000*60){
+    timer = millis();
+    if (! mqtt.ping()) {
+      mqtt.disconnect(); //Is this why they keep disconnecting?  
+      MQTT_connect();
+      myCommandHandler.blink_color(255, 100, 30, 1000); 
+    }
+  }
 }
 
 // Function to connect and reconnect as necessary to the MQTT server.
@@ -190,7 +193,7 @@ void MQTT_connect() {
     Serial.println(mqtt.connectErrorString(ret));
     Serial.println("Retrying MQTT connection in 5 seconds...");
     mqtt.disconnect();
-    delay(5000);  // wait 5 seconds
+    delay(800);  // wait 5 seconds
     retries--;
     if (retries == 0) {
       // basically die and wait for WDT to reset me
@@ -198,4 +201,5 @@ void MQTT_connect() {
     }
   }
   Serial.println("MQTT Connected!");
+  myCommandHandler.show_led_int(0, 0, 100);
 }

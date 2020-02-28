@@ -11,7 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 24
+#define MY_ROLE 0
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -22,7 +22,7 @@ int NUM_ROWS = 5;
 int NUM_COLS = 5;
 int flag_ota_program = 0;
 struct Colors{
-unsigned int r,b,g;
+unsigned int r,b,g,wait;
 };
 class CommandHandler;
 std::map<String, int> LocationArgIndex;
@@ -77,10 +77,12 @@ class CommandHandler{
       commandsTable["StoreFrame"] = &CommandHandler::store_frame;
       commandsTable["StartFrames"] = &CommandHandler::show_frames;
       commandsTable["Auto"] = &CommandHandler::call_automata;
-      commandsTable["UpdateWifi"] = &CommandHandler::update_wifi;
-      commandsTable["StopWifiUpdate"] = &CommandHandler::stop_wifi_update;
-      commandsTable["UpdateGridSize"] = &CommandHandler::update_grid_size;
-      commandsTable["UpdateWifiAll"] = &CommandHandler::update_wifi_all;
+      commandsTable["UpdateWifi"] = &CommandHandler::update_wifi; // Called as func / x / y
+      commandsTable["StopWifiUpdate"] = &CommandHandler::stop_wifi_update; //Called as func / x / y
+      commandsTable["UpdateGridSize"] = &CommandHandler::update_grid_size; //Called as func / rows / cols
+      commandsTable["UpdateWifiAll"] = &CommandHandler::update_wifi_all; // Called as func/
+      commandsTable["StopWifiAll"] = &CommandHandler::stop_wifi_all;
+      
       return;
     }
    void update_wifi_all(std::vector<String> & input){
@@ -96,6 +98,9 @@ class CommandHandler{
         if(valid_loc){
           flag_ota_program = 1;
         }
+    }
+    void stop_wifi_all(std::vector<String> & input){
+      flag_ota_program = 0;  
     }
     void stop_wifi_update(std::vector<String> & input){
         bool valid_loc = check_vector_loc(input);
@@ -119,6 +124,7 @@ class CommandHandler{
         colorObj.r = String(input[2]).toInt();
         colorObj.b = String(input[3]).toInt();
         colorObj.g = String(input[4]).toInt();
+        colorObj.wait = String(input[5]).toInt();
         FramesList.push_back(colorObj);
         //CommandsList.push_back(input);
       }
@@ -130,7 +136,7 @@ class CommandHandler{
         g = it->g;
         b = it->b;
         show_led_int(r,g,b);
-        delay(.016);
+        delay(it->wait);
       }
     }
     void bm_genmsg_v(std::vector<String> & input){
@@ -156,7 +162,13 @@ class CommandHandler{
       //uint32_t color = 0; 
       uint32_t color = strip.Color(r, b, g);
       long wait_time = atol(input[0].c_str());
-      Serial.println("Expected wait time for show_sequence:");
+      //Serial.println("Expected wait time for show_sequence:");
+      Serial.println(wait_time);
+      _bitmap.show_sequence_delay(wait_time, color);
+    }
+    void bm_show_seq(int r, int b, int g, long wait_time){ 
+      uint32_t color = strip.Color(r, b, g);
+      //Serial.println("Expected wait time for show_sequence:");
       Serial.println(wait_time);
       _bitmap.show_sequence_delay(wait_time, color);
     }
@@ -228,11 +240,20 @@ class CommandHandler{
       int r = String(input[0].c_str()).toInt();
       int b = String(input[1].c_str()).toInt();
       int g = String(input[2].c_str()).toInt();  
+      int wait = 1000;
       this->show_led_int(r, b, g);
-      delay(0.5);
+      delay(wait);
+      this->show_led_int(0, 0, 0);
+      delay(wait);
+      this->show_led_int(r, b, g);
+      delay(wait);
       this->show_led_int(0, 0, 0);
     }
-    void blink_color(int r, int b, int g, int wait = 0.5){
+    void blink_color(int r, int b, int g, int wait = 1000){
+      this->show_led_int(r, b, g);
+      delay(wait);
+      this->show_led_int(0, 0, 0);
+      delay(wait);
       this->show_led_int(r, b, g);
       delay(wait);
       this->show_led_int(0, 0, 0);
@@ -281,7 +302,7 @@ class CommandHandler{
       strip.setPixelColor(10, mycolor);
       strip.setPixelColor(11, mycolor);
       strip.show();
-      Serial.print(String("My Color: " + String(r) + " " + String(b) + " " + String(g)));
+      Serial.print(String("My Color: " + String(r) + " " + String(b) + " " + String(g) + "\n"));
       #endif
     }
     void corners(){

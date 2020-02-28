@@ -42,11 +42,12 @@ public void CommandsList(int Value){
   else if(Value == 9){out = String.format("BitmapGenSeq/%s/", "2");}
   else if(Value == 10){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
   else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G);}
-  else if(Value == 12){out = "StartFrames";}
-  else if(Value == 13){out="Auto";}
-  else if(Value == 14){out="StopWifiUpdate";}
+  else if(Value == 12){out = "StartFrames/";}
+  else if(Value == 13){out=String.format("Auto/%s/%s/%s/%s/", R, B, G, WaitTime);}
+  else if(Value == 14){out="StopWifiUpdate/";}
   else if(Value == 15){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
-  else if(Value == 16){out="UpdateWifiAll";}
+  else if(Value == 16){out="UpdateWifiAll/";}
+  else if(Value == 17){out="StopWifiAll/";}
   println(Value);
   client.publish("test_channel", out);
 }

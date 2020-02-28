@@ -22,6 +22,8 @@ DropdownList droplist = cp5.addDropdownList("CommandsList").setPosition(460 , 21
   droplist.addItem("StopWifiUpdate", 14);
   droplist.addItem("UpdateGridSize", 15);
   droplist.addItem("UpdateWifiAll", 16);
+  droplist.addItem("StopWifiAll", 17);
+  
   cp5.addTextfield("ID")
     .setBroadcast(false)
     .setPosition(30, 30)
