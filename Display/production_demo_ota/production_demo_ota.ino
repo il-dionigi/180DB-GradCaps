@@ -130,7 +130,7 @@ void loop() {
 // Should be called in the loop function and it will take care if connecting.
 void reconnect() {
   // Loop until we're reconnected
-  while (!client.connected()) {
+  while (!mqtt.connected()) {
     Serial.print("Attempting MQTT connection...");
     // Create a random client ID
     String clientId = "ESP8266Client-";
