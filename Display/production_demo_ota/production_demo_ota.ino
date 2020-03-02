@@ -13,12 +13,12 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-//#define WLAN_SSID       "ece_private"
-//#define WLAN_PASS       "uclagradcap"
-//#define AIO_SERVER      "192.168.0.100"
-#define WLAN_SSID       "ASUS_50_2G"
-#define WLAN_PASS       "1337h4v3fun#97"
-#define AIO_SERVER      "192.168.50.17"
+#define WLAN_SSID       "ece_private"
+#define WLAN_PASS       "uclagradcap"
+#define AIO_SERVER      "192.168.0.114"
+//#define WLAN_SSID       "ASUS_50_2G"
+//#define WLAN_PASS       "1337h4v3fun#97"
+//#define AIO_SERVER      "192.168.50.17"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
 #define PUB_CHANNEL "responses"
@@ -27,9 +27,13 @@ WiFiClient client;
 PubSubClient mqtt(client);
 CommandHandler myCommandHandler;
 void callback(char* topic, uint8_t* message, unsigned int length) {
-    if (topic == CHANNEL){
-      String messageTemp = String((char *)message);
-      Serial.print(messageTemp);
+    String messageTemp;
+    for(int i = 0; i < length; i++){
+      messageTemp += String(message[i]);  
+    }
+    Serial.println(messageTemp);
+    Serial.println(topic);
+    if (strcmp(topic, messageTemp.c_str()){
       std::vector<String> messageVec = my_split(messageTemp.c_str());
       for (std::vector<String>::iterator it = messageVec.begin() ; it != messageVec.end(); ++it){
         //bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
@@ -103,8 +107,7 @@ void setup() {
   //MQTT_connect();
   mqtt.setServer(AIO_SERVER, AIO_SERVERPORT);
   mqtt.setCallback(callback);
-  mqtt.subscribe(CHANNEL);
-  
+  mqtt.subscribe(CHANNEL); 
 }
 
 uint32_t x = 0;
@@ -140,14 +143,15 @@ void reconnect() {
     if (mqtt.connect(clientId.c_str())) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      mqtt.publish("outTopic", "hello world");
+      mqtt.publish(PUB_CHANNEL, "hello world");
       // ... and resubscribe
-      mqtt.subscribe("inTopic");
+      mqtt.subscribe(CHANNEL);
       myCommandHandler.blink_color(0, 255, 0, 1000);
     } else {
       Serial.print("failed, rc=");
       Serial.print(mqtt.state());
       Serial.println(" try again in 5 seconds");
+      mqtt.publish(CHANNEL, "hello world");
       myCommandHandler.blink_color(255, 0, 0, 1000); //Does internal delays
     }
   }

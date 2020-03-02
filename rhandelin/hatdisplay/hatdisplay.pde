@@ -15,8 +15,9 @@ void setup() {
   client = new MQTTClient(this);
   createUI(cp5, font);
   try {
-    //client.connect("mqtt://192.168.0.100");
-    client.connect("mqtt://192.168.50.17");  
+    //client.connect("mqtt://192.168.0.10");
+    //client.connect("mqtt://192.168.50.17"); 
+    client.connect("mqtt://192.168.0.114");
 }
   catch(Exception e) {
   }
