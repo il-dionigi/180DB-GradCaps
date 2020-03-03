@@ -15,10 +15,10 @@
 
 #define WLAN_SSID       "ece_private"
 #define WLAN_PASS       "uclagradcap"
-#define AIO_SERVER      "192.168.0.114"
+//#define AIO_SERVER      "192.168.0.114"
 //#define WLAN_SSID       "ASUS_50_2G"
 //#define WLAN_PASS       "1337h4v3fun#97"
-//#define AIO_SERVER      "192.168.50.17"
+#define AIO_SERVER      "192.168.50.17"
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
 #define PUB_CHANNEL "responses"
