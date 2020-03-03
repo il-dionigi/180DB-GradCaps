@@ -22,18 +22,22 @@
 #define AIO_SERVERPORT  1883
 #define CHANNEL "test_channel"
 #define PUB_CHANNEL "responses"
+#define MSG_BUFFER_SIZE  (50)
 using namespace std;
 WiFiClient client;
 PubSubClient mqtt(client);
 CommandHandler myCommandHandler;
 void callback(char* topic, uint8_t* message, unsigned int length) {
-    String messageTemp;
-    for(int i = 0; i < length; i++){
-      messageTemp += String(message[i]);  
+    char msg[MSG_BUFFER_SIZE];
+    int i = 0;
+    for(; i < length; i++){
+      msg[i] = message[i];  
     }
-    Serial.println(messageTemp);
-    Serial.println(topic);
-    if (strcmp(topic, messageTemp.c_str()){
+    msg[i] = '\0';
+    Serial.println(msg);
+    Serial.println(String("topic") + String(topic));
+    String messageTemp(msg);
+    if (strcmp(topic, messageTemp.c_str())){
       std::vector<String> messageVec = my_split(messageTemp.c_str());
       for (std::vector<String>::iterator it = messageVec.begin() ; it != messageVec.end(); ++it){
         //bool valid_cmd = myCommandHandler.commandsTable.count(*it) > 0;
@@ -145,13 +149,15 @@ void reconnect() {
       // Once connected, publish an announcement...
       mqtt.publish(PUB_CHANNEL, "hello world");
       // ... and resubscribe
-      mqtt.subscribe(CHANNEL);
+      mqtt.setServer(AIO_SERVER, AIO_SERVERPORT);
+      mqtt.setCallback(callback);
+      mqtt.subscribe(CHANNEL); 
       myCommandHandler.blink_color(0, 255, 0, 1000);
     } else {
       Serial.print("failed, rc=");
       Serial.print(mqtt.state());
       Serial.println(" try again in 5 seconds");
-      mqtt.publish(CHANNEL, "hello world");
+      mqtt.publish(CHANNEL, "hello world_fail");
       myCommandHandler.blink_color(255, 0, 0, 1000); //Does internal delays
     }
   }
