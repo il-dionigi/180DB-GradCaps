@@ -1,4 +1,5 @@
 #include <PubSubClient.h>
+#define MQTT_KEEPALIVE 65535
 #include <stdio.h>
 #include "CommandHandler.h"
 //#include "Adafruit_MQTT.h"
