@@ -16,19 +16,17 @@
 #define WLAN_SSID       "ece_private"
 #define WLAN_PASS       "uclagradcap"
 //#define AIO_SERVER      "192.168.0.114"
-//#define WLAN_SSID       "ASUS_50_2G"
-//#define WLAN_PASS       "1337h4v3fun#97"
-#define AIO_SERVER      "192.168.50.17"
 #define AIO_SERVERPORT  1883
+#define AIO_SERVER      "192.168.0.10"
 #define CHANNEL "test_channel"
 #define PUB_CHANNEL "responses"
-#define MSG_BUFFER_SIZE  (50)
+#define MSG_BUFFER_SIZE 50
 using namespace std;
 WiFiClient client;
 PubSubClient mqtt(client);
 CommandHandler myCommandHandler;
+char msg[MSG_BUFFER_SIZE];
 void callback(char* topic, uint8_t* message, unsigned int length) {
-    char msg[MSG_BUFFER_SIZE];
     int i = 0;
     for(; i < length; i++){
       msg[i] = message[i];  
@@ -59,7 +57,7 @@ void callback(char* topic, uint8_t* message, unsigned int length) {
           mqtt.publish(PUB_CHANNEL, error.c_str());
         }
       }
-      mqtt.publish(PUB_CHANNEL, myCommandHandler.get_status().c_str());
+      //mqtt.publish(PUB_CHANNEL, myCommandHandler.get_status().c_str());
      }
 }
 void setup() {
