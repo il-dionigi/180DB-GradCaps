@@ -1,3 +1,4 @@
+#define MQTT_KEEPALIVE 65535
 #include <PubSubClient.h>
 #define MQTT_KEEPALIVE 65535
 #include <stdio.h>
