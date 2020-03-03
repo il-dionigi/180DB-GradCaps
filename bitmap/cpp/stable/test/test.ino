@@ -19,17 +19,19 @@ void setup() {
   Serial.begin(115200);
   Serial.println("Hello, you've entered setup()...");
   
-  bitmap bm = bitmap(5,5,&strip,VERTICAL);
-  bm.generate_msg_v("UCLA ROCKS!");
-//  bm.generate_sequence_v(5, 3, 0);
+  bitmap bm = bitmap(15,5,&strip);
+  bm.generate_msg_v("UCLA!");
+//  bm.generate_sequence_v(0, 0);
 
   // Add these to the bitmap class? Enums??
   uint32_t red = strip.Color(150,0,0);
   uint32_t green = strip.Color(0,150,0);
   uint32_t blue = strip.Color(0,0,150);
   uint32_t yellow = strip.Color(200,130,0);
-  
+
   bm.print_scroll();
+
+  Serial.println("Woohoo! Still works :D");
 }
 // the loop function runs over and over again forever
 void loop() {

@@ -9,6 +9,7 @@ class bitmap {
 private:
   SimpleMap<char, uint32_t> *charDict;
 
+  char* m_msg;
   void setupMap();
   bool* m_msg_v;
   bool* m_seq_v;
@@ -22,18 +23,21 @@ private:
 
   Adafruit_NeoPixel* m_strip;
 
+  void set_msg(const char * const msg);
+
   void do_something(bool on, uint32_t color);
-public:
-  bitmap(int length, int width, Adafruit_NeoPixel* strip, ORIENTATION orientation);
-  ~bitmap();
-  void print_char(char c);
-  void print_scroll();
-  bool generate_msg_v(char* msg);
   bool* get_sequence_v(int iterations, int r, int c);
+public:
+  bitmap(const int length, const int width, Adafruit_NeoPixel* strip, ORIENTATION orientation);
+  ~bitmap();
+  void print_char(const char c);
+  void print_scroll();
+  bool generate_msg_v(const char * const msg);
   bool generate_sequence_v(int iterations, int r, int c);
   void show_sequence_delay(long interval_ms, uint32_t color);
   void show_sequence_nodelay(long interval_ms, uint32_t color);
   // can't think of good name, like the OG but lights up by column during interval
   void show_sequence_scroll_delay(long interval_ms, uint32_t color);
   void show_sequence_scroll_nodelay(long interval_ms, uint32_t color);
+  void set_orientation(ORIENTATION orientation);
 };
