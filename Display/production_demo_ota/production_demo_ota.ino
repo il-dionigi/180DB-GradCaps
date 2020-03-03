@@ -2,7 +2,7 @@
 #define MQTT_KEEPALIVE 65535
 #include <PubSubClient.h>
 #define MQTT_KEEPALIVE 65535
-#define MQTT_SOCKET_TIMEOUT 600
+#define MQTT_SOCKET_TIMEOUT 600 //THIS DOESNT WORK, NEED TO EDIT HEADER
 #include <stdio.h>
 #include "CommandHandler.h"
 //#include "Adafruit_MQTT.h"

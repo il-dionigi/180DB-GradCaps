@@ -11,7 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 7
+#define MY_ROLE 15
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -177,6 +177,7 @@ class CommandHandler{
       //Serial.println("Expected wait time for show_sequence:");
       Serial.println(wait_time);
       _bitmap.show_sequence_delay(wait_time, color);
+      show_led_int(0,0,0);
     }
     void handle_command(std::string input, std::string delimiter = "/"){
       if (input.size() == 1){
