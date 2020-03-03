@@ -3,7 +3,28 @@
 //#include <SimpleMap.h>
 #include "charDicts.h"
 
-bool bitmap::generate_msg_v(char* msg) {
+void bitmap::set_msg(const char * const msg) {
+  if (msg == m_msg) {
+    return;
+  }
+
+  if (m_msg != nullptr) {
+    free(m_msg);
+  }
+
+  int i;
+  for (i = 0; msg[i] != '\0'; ++i) {}
+
+  m_msg = new char[i+1];
+
+  strcpy(m_msg, msg);
+
+  return;
+}
+
+bool bitmap::generate_msg_v(const char * const msg) {
+  set_msg(msg);
+
   if (m_orientation) { // vertical
     int msg_len;
     for (int i = 0; msg[i] != '\0'; ++i) {
@@ -123,7 +144,7 @@ bool bitmap::generate_msg_v(char* msg) {
 	return true;
 }
 
-void bitmap::print_char(char c) {
+void bitmap::print_char(const char c) {
 	char* bitChar = new char[m_rows*m_columns+m_rows+1];
 	uint32_t encodedChar = charDict->get(c);
 	int index = 0;
@@ -214,7 +235,17 @@ void bitmap::print_scroll() {
     }
   }
   /*
-  free(display);
+    if (m_orientation == VERTICAL) {
+    bool*** output = new bool**[m_columns];
+    for (int r = 0; r < m_rows; ++r) {
+    output[r] = new bool*[m_rows];
+    for (int c = 0; c < m_columns; c++) {
+    output[r][c] = get_sequence_v(5, r, c);
+    }
+    }
+
+
+    free(display);
   for (int r = 0; r < m_rows; ++r) {
     free(output[r]);
   }
@@ -388,6 +419,12 @@ void bitmap::show_sequence_scroll_delay(long interval_ms, uint32_t color) {
   m_strip->show();
 }
 
+void bitmap::set_orientation(ORIENTATION orientation){
+  m_orientation = orientation;
+
+  generate_msg_v(m_msg);
+}
+
 void bitmap::show_sequence_scroll_nodelay(long interval_ms, uint32_t color) {
   /*
 	int i = 0;
@@ -443,7 +480,7 @@ void bitmap::show_sequence_scroll_nodelay(long interval_ms, uint32_t color) {
   m_strip->show(); */
 }
 
-bitmap::bitmap(int length, int width, Adafruit_NeoPixel* strip, ORIENTATION orientation) {
+bitmap::bitmap(const int length, const int width, Adafruit_NeoPixel* strip, ORIENTATION orientation) {
   m_orientation = orientation;
 
   m_msg_v = nullptr;
