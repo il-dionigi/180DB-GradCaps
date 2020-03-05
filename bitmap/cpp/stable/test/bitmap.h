@@ -23,12 +23,13 @@ private:
 
   void do_something(const bool on, const uint32_t color);
 public:
-  bitmap(const int num_rows, const int num_cols, Adafruit_NeoPixel* strip);
+  bitmap(const int &num_rows, const int &num_cols, Adafruit_NeoPixel* strip);
   ~bitmap();
   void print_scroll();
   bool generate_msg_v(const char* const &msg);
-  bool* get_sequence_v(const int r, const int c);
-  bool generate_sequence_v(const int r, const int c);
-  void show_sequence_delay(const long interval_ms, const uint32_t color);
-  void show_sequence_nodelay(const long interval_ms, const uint32_t color);
+  bool* get_sequence_v(const int &r, const int &c);
+  bool generate_sequence_v(const int &r, const int &c);
+  void show_location(const int &r, const int &c, const long &interval_ms, const uint32_t &color);
+  void show_sequence_delay(const long &interval_ms, const uint32_t &color);
+  void show_sequence_nodelay(const long &interval_ms, const uint32_t &color);
 };

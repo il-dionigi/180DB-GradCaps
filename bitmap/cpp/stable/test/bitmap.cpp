@@ -109,7 +109,7 @@ void bitmap::print_scroll() {
   
 }
 
-bool* bitmap::get_sequence_v(const int r, const int c) {
+bool* bitmap::get_sequence_v(const int &r, const int &c) {
   int len = m_msg_len / m_columns;
   m_seq_len = len + m_rows;
   Serial.println(m_seq_len+1);
@@ -160,7 +160,7 @@ void bitmap::do_something(const bool on, const uint32_t color) {
 	m_strip->show();
 }
 
-bool bitmap::generate_sequence_v(const int r, const int c) {
+bool bitmap::generate_sequence_v(const int &r, const int &c) {
   if (m_msg_v != nullptr) {
     m_seq_v = get_sequence_v(r, c);
     return true;
@@ -168,7 +168,7 @@ bool bitmap::generate_sequence_v(const int r, const int c) {
   return false;
 }
 
-void bitmap::show_sequence_delay(const long interval_ms, const uint32_t color) {
+void bitmap::show_sequence_delay(const long &interval_ms, const uint32_t &color) {
 	int i = 0;
 	for (int i = 0; i < m_seq_len; ++i) {
 		do_something(*(m_seq_v + i), color);
@@ -176,7 +176,7 @@ void bitmap::show_sequence_delay(const long interval_ms, const uint32_t color) {
 	}
 }
 
-void bitmap::show_sequence_nodelay(const long interval_ms, const uint32_t color) {
+void bitmap::show_sequence_nodelay(const long &interval_ms, const uint32_t &color) {
   unsigned long current_ms = millis();
   unsigned long previous_ms = current_ms;
 
@@ -193,7 +193,22 @@ void bitmap::show_sequence_nodelay(const long interval_ms, const uint32_t color)
   }
 }
 
-bitmap::bitmap(const int num_rows, const int num_cols, Adafruit_NeoPixel* strip) {
+void bitmap::show_location(const int &r, const int &c, const long &interval_ms, const uint32_t &color) {
+  m_strip->clear();
+  m_strip->show();
+
+  delay(interval_ms*(r*m_columns+c));
+
+  m_strip->fill(color);
+  m_strip->show();
+
+  delay(interval_ms);
+
+  m_strip->clear();
+  m_strip->show();
+}
+
+bitmap::bitmap(const int &num_rows, const int &num_cols, Adafruit_NeoPixel* strip) {
   m_msg_v = nullptr;
 	m_seq_v = nullptr;
 
