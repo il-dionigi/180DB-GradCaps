@@ -11,7 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 24
+#define MY_ROLE 19
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
