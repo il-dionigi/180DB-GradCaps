@@ -1,17 +1,12 @@
 #include <PubSubClient.h>
 #include <stdio.h>
-//#include "Adafruit_MQTT.h"
-//#include "Adafruit_MQTT_Client.h"
 #include <sstream>
 #include <vector>
 #include <iterator>
 #include <ESP8266WiFi.h>
-
-//OTA Dependencies
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-
 #define WLAN_SSID       "ece_private"
 #define WLAN_PASS       "uclagradcap"
 //#define AIO_SERVER      "192.168.0.114"
@@ -22,3 +17,11 @@
 #define MSG_BUFFER_SIZE 50
 
 #define DEBUG 1
+#define MY_ROLE -3
+
+#define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
+#define X_ADDR 0
+#define Y_ADDR 1
+#define OTA_FLAG 2
+#define LED_PIN D4
+#define LED_COUNT 12

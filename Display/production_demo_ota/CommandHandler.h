@@ -11,15 +11,6 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#include "includes.h"
-#define MY_ROLE 19
-#define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
-#define X_ADDR 0
-#define Y_ADDR 1
-#define OTA_FLAG 2
-#define LED_PIN D4
-#define LED_COUNT 12
-
 int NUM_ROWS = 5;
 int NUM_COLS = 5;
 int flag_ota_program = 0;
