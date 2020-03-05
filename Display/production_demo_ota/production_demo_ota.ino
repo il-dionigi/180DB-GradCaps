@@ -58,7 +58,7 @@ void callback(char* topic, uint8_t* message, unsigned int length) {
           Serial.print("Got an invalid command \n");
           Serial.println((*it).c_str());
           String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
-          mqtt.publish(PUB_CHANNEL, error.c_str());
+          //mqtt.publish(PUB_CHANNEL, error.c_str());
         }
       }
       //mqtt.publish(PUB_CHANNEL, myCommandHandler.get_status().c_str());
@@ -149,7 +149,7 @@ void reconnect() {
     if (mqtt.connect(clientId.c_str())) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      mqtt.publish(PUB_CHANNEL, "hello world");
+      //mqtt.publish(PUB_CHANNEL, "hello world");
       // ... and resubscribe
       mqtt.setServer(AIO_SERVER, AIO_SERVERPORT);
       mqtt.setCallback(callback);
@@ -159,7 +159,7 @@ void reconnect() {
       Serial.print("failed, rc=");
       Serial.print(mqtt.state());
       Serial.println(" try again in 5 seconds");
-      mqtt.publish(CHANNEL, "hello world_fail");
+      //mqtt.publish(CHANNEL, "hello world_fail");
       myCommandHandler.blink_color(255, 0, 0, 1000); //Does internal delays
     }
   }
