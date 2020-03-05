@@ -10,14 +10,18 @@ bool bitmap::generate_msg_v(const char* const &msg) {
   }
   m_msg_len = msg_len*(m_height_char+1)*m_width_char;
 
+  #if defined(DEBUG)
   Serial.println(m_msg_len);
-
+  #endif
+  
   bool* parr = new bool[m_msg_len]; // based on charDict35, each char takes 6
   char* bitmsg = new char[msg_len*(m_rows+1)*(m_columns+1)+1]; // based on charDict35, each char takes 6
   int index = 0, m_index = 0;
 
   if (parr == nullptr) {
+    #if defined(DEBUG)
     Serial.print("Error allocating msg vector.\n"); // add perror
+    #endif
     return false;
   } else {
     int h, w;
@@ -57,9 +61,10 @@ bool bitmap::generate_msg_v(const char* const &msg) {
   }
 
   m_msg_v = parr;
-
+  #if defined(DEBUG)
   Serial.println(bitmsg);
   Serial.println(m_seq_len);
+  #endif
 
   free(bitmsg);
 
@@ -93,8 +98,10 @@ void bitmap::print_scroll() {
       ++index;
     }
     display[index-1] = '\0';
+    #if defined(DEBUG)
     Serial.println(display);
     Serial.println("---------");
+    #endif
   }
 
   delete[] display;
@@ -152,10 +159,14 @@ bool* bitmap::get_sequence_v(const int &r, const int &c) {
 void bitmap::do_something(const bool on, const uint32_t color) {
 	if (on) {
 		m_strip->fill(color);
+   #if defined(DEBUG)
 		Serial.println("On!");
+    #endif
 	} else {
 		m_strip->fill(0);
+   #if defined(DEBUG)
 		Serial.println("Off!");
+   #endif
 	}
 	m_strip->show();
 }

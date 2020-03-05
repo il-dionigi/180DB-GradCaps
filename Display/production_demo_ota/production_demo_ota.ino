@@ -1,30 +1,5 @@
-#define MQTT_SOCKET_TIMEOUT 600
-#define MQTT_KEEPALIVE 65535
-#include <PubSubClient.h>
-#define MQTT_KEEPALIVE 65535
-#define MQTT_SOCKET_TIMEOUT 600 //THIS DOESNT WORK, NEED TO EDIT HEADER
-#include <stdio.h>
 #include "CommandHandler.h"
-//#include "Adafruit_MQTT.h"
-//#include "Adafruit_MQTT_Client.h"
-#include <sstream>
-#include <vector>
-#include <iterator>
-#include <ESP8266WiFi.h>
-
-//OTA Dependencies
-#include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
-
-#define WLAN_SSID       "ece_private"
-#define WLAN_PASS       "uclagradcap"
-//#define AIO_SERVER      "192.168.0.114"
-#define AIO_SERVERPORT  1883
-#define AIO_SERVER      "192.168.0.10"
-#define CHANNEL "test_channel"
-#define PUB_CHANNEL "responses"
-#define MSG_BUFFER_SIZE 50
+#include "includes.h"
 using namespace std;
 WiFiClient client;
 PubSubClient mqtt(client);
@@ -36,8 +11,10 @@ void callback(char* topic, uint8_t* message, unsigned int length) {
       msg[i] = message[i];  
     }
     msg[i] = '\0';
+    #if defined(DEBUG)
     Serial.println(msg);
     Serial.println(String("topic") + String(topic));
+    #endif
     String messageTemp(msg);
     if (strcmp(topic, messageTemp.c_str())){
       std::vector<String> messageVec = my_split(messageTemp.c_str());
@@ -46,17 +23,23 @@ void callback(char* topic, uint8_t* message, unsigned int length) {
         std::string cmd_name = std::string(it->c_str());
         //Serial.println(cmd_name.c_str());
         cmd_name = cmd_name.substr(0, cmd_name.find("/"));
-        Serial.println(cmd_name.c_str());
+        #if defined(DEBUG)
+          Serial.println(cmd_name.c_str());
+        #endif
         bool valid_cmd = myCommandHandler.commandsTable.count(String(cmd_name.c_str())) > 0;
         //Serial.println(valid_cmd);
         if (valid_cmd || it->length() == 1)  {
+          #if defined(DEBUG)
           Serial.println("Handling command ...");
+          #endif
           myCommandHandler.handle_command(std::string(it->c_str()));
         }
         else{
           myCommandHandler.blink();
+          #if defined(DEBUG)
           Serial.print("Got an invalid command \n");
           Serial.println((*it).c_str());
+          #endif
           String error = myCommandHandler.get_error("Invalid Command: ", it->c_str());
           //mqtt.publish(PUB_CHANNEL, error.c_str());
         }
@@ -147,7 +130,9 @@ void reconnect() {
     clientId += String(MY_ROLE, HEX);
     // Attempt to connect
     if (mqtt.connect(clientId.c_str())) {
+      #if defined(DEBUG)
       Serial.println("connected");
+      #endif
       // Once connected, publish an announcement...
       //mqtt.publish(PUB_CHANNEL, "hello world");
       // ... and resubscribe
@@ -156,9 +141,11 @@ void reconnect() {
       mqtt.subscribe(CHANNEL); 
       myCommandHandler.blink_color(0, 255, 0, 1000);
     } else {
+      #if defined(DEBUG)
       Serial.print("failed, rc=");
       Serial.print(mqtt.state());
       Serial.println(" try again in 5 seconds");
+      #endif
       //mqtt.publish(CHANNEL, "hello world_fail");
       myCommandHandler.blink_color(255, 0, 0, 1000); //Does internal delays
     }

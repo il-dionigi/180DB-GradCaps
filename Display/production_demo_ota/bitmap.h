@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include <SimpleMap.h>
+#include "includes.h"
 
 class bitmap {
 private:
