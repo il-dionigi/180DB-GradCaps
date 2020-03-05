@@ -37,7 +37,7 @@ public void CommandsList(int Value){
   else if(Value == 1){out = String.format("ShowLED/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B);}
   else if(Value == 2){out = String.format("ShowAllLEDs", R, G, B);}
   else if(Value == 3){out = String.format("Rainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
-  else if(Value == 4){out = String.format("TheaterChase/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G, WaitTime);}
+  else if(Value == 4){out = String.format("TheaterChase/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
   else if(Value == 5){out = String.format("TheaterChaseRainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
   else if(Value == 6){out = String.format("UpdateLoc/%s/%s/%s/", ID_INPUT, COL_INPUT, ROW_INPUT);}
   else if(Value == 7){out = String.format("BitmapGenMsg/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
@@ -47,7 +47,7 @@ public void CommandsList(int Value){
   else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/%s/", FUNC, COL_INPUT, ROW_INPUT, R, B, G);}
   else if(Value == 12){out = "StartFrames/";}
   else if(Value == 13){out = "ResetFrames/";}
-  else if(Value == 14){out=String.format("Auto/%s/%s/%s/%s/%s/", R, B, G, FUNC, WaitTime);}
+  else if(Value == 14){out=String.format("Auto/%s/%s/%s/%s/%s/", R, G, B, FUNC, WaitTime);}
   else if(Value == 15){out="StopWifiUpdate/";}
   else if(Value == 16){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
   else if(Value == 17){out="UpdateWifiAll/";}
