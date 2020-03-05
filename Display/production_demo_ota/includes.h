@@ -16,8 +16,8 @@
 #define PUB_CHANNEL "responses"
 #define MSG_BUFFER_SIZE 50
 
-#define DEBUG 1
-#define MY_ROLE -3
+//#define DEBUG 1
+#define MY_ROLE 69
 
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0

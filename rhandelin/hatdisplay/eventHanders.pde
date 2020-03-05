@@ -47,7 +47,7 @@ public void CommandsList(int Value){
   else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/%s/", FUNC, COL_INPUT, ROW_INPUT, R, B, G);}
   else if(Value == 12){out = "StartFrames/";}
   else if(Value == 13){out = "ResetFrames/";}
-  else if(Value == 14){out=String.format("Auto/%s/%s/%s/%s/", R, B, G, WaitTime);}
+  else if(Value == 14){out=String.format("Auto/%s/%s/%s/%s/%s/", R, B, G, FUNC, WaitTime);}
   else if(Value == 15){out="StopWifiUpdate/";}
   else if(Value == 16){out=String.format("UpdateGridSize/%s/%s/", COL_SIZE, ROW_SIZE);}
   else if(Value == 17){out="UpdateWifiAll/";}
