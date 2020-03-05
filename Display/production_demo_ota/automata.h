@@ -1,3 +1,4 @@
+#include "includes.h"
 void automata(Adafruit_NeoPixel *strip, uint32_t color, int x, int y, unsigned char key, int axis=0, int mydelay=250){
   //automata(&pixels, magenta, loc, 54, 0);
   int loc[2] = {x,y};

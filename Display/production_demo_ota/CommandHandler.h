@@ -11,6 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
+#include "includes.h"
 #define MY_ROLE 19
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
@@ -18,6 +19,7 @@
 #define OTA_FLAG 2
 #define LED_PIN D4
 #define LED_COUNT 12
+
 int NUM_ROWS = 5;
 int NUM_COLS = 5;
 int flag_ota_program = 0;
@@ -147,7 +149,9 @@ class CommandHandler{
     }
     void bm_genmsg(std::vector<String> & input){
       _bitmap.generate_msg_v((char*)input[0].c_str());
+      #if defined(DEBUG)
       Serial.println("Generated Message Successfully!");  
+      #endif
     }
     void bm_gen_seq(std::vector<String> & input){
       _bitmap.generate_sequence_v(y, x);
@@ -161,13 +165,17 @@ class CommandHandler{
       uint32_t color = strip.Color(r, b, g);
       long wait_time = atol(input[0].c_str());
       //Serial.println("Expected wait time for show_sequence:");
+      #if defined(DEBUG)
       Serial.println(wait_time);
+      #endif
       _bitmap.show_sequence_delay(wait_time, color);
     }
     void bm_show_seq(int r, int b, int g, long wait_time){ 
       uint32_t color = strip.Color(r, b, g);
       //Serial.println("Expected wait time for show_sequence:");
+      #if defined(DEBUG)
       Serial.println(wait_time);
+      #endif
       _bitmap.show_sequence_delay(wait_time, color);
       show_led_int(0,0,0);
     }
@@ -231,7 +239,9 @@ class CommandHandler{
             CALL_MEMBER_FN(*this, cmd_func, parses);
           }
           else{
+            #if defined(DEBUG)
             Serial.println(String("Invalid Command!" + parses[0] + "\n")); 
+            #endif
           }
         this->show_led_int(0, 0, 0);
       }
@@ -251,7 +261,7 @@ class CommandHandler{
       int r = String(input[0].c_str()).toInt();
       int b = String(input[1].c_str()).toInt();
       int g = String(input[2].c_str()).toInt();  
-      int wait = 1000;
+      int wait = String(input[3].c_str()).toInt();
       this->show_led_int(r, b, g);
       delay(wait);
       this->show_led_int(0, 0, 0);
@@ -441,7 +451,9 @@ class CommandHandler{
     }
     void updateLoc(std::vector<String> & input){
       if(input[0].toInt() == this->role_id){
+        #if defined(DEBUG)
          Serial.println(String("RoleID: ") + String(MY_ROLE) + "x: " + String(x) + " y: " + String(y));
+         #endif
         this->x = input[1].toInt();
         this->y = input[2].toInt();
         EEPROM.write(X_ADDR, this->x);
@@ -451,7 +463,9 @@ class CommandHandler{
    void updateAllLoc(std::vector<String> & input){
       for(int i = input.size() - 1; i--; i >= 0){
         if(input[i-2].toInt() == this->role_id){
+          #if defined(DEBUG)
           Serial.println(String("RoleID: ") + String(MY_ROLE) + "x: " + String(x) + " y: " + String(y));
+          #endif
           this->x = input[i-1].toInt();
           this->y = input[i].toInt();
           EEPROM.write(X_ADDR, this->x);
