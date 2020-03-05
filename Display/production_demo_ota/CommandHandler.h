@@ -11,7 +11,7 @@
 #include <tuple>
 #include "bitmap.h"
 #include "automata.h"
-#define MY_ROLE 15
+#define MY_ROLE 24
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
 #define Y_ADDR 1
@@ -33,14 +33,14 @@ std::list<Colors> FramesList;
 class CommandHandler{
   public:
   typedef void (CommandHandler::*pfunc)(std::vector<String>&);
-  CommandHandler() : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL){
+  CommandHandler() : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip){
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     x = EEPROM.read(X_ADDR);
     y = EEPROM.read(Y_ADDR);
     role_id = MY_ROLE;
     init_commands_with_args();
   }
-  CommandHandler(int x, int y, int role_id) : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL){
+  CommandHandler(int x, int y, int role_id) : strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800), _bitmap(NUM_ROWS, NUM_COLS, &strip){
     //_bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     this->x = x;
     this->y = y;
@@ -71,10 +71,10 @@ class CommandHandler{
       commandsTable["UpdateRole"] = &CommandHandler::updateRole; //Called as func/oldrole/newrole
       commandsTable["UpdateLoc"] = &CommandHandler::updateLoc; //Called as func/role/x/y
       commandsTable["UpdateAllLoc"] = &CommandHandler::updateAllLoc; //Dont use;
-      commandsTable["BitmapGenMsgV"] = &CommandHandler::bm_genmsg_v; //Called as func/x/y/string
-      commandsTable["BitmapGenMsgH"] = &CommandHandler::bm_genmsg_h; //Called as func/x/y/string
+      commandsTable["BitmapGenMsg"] = &CommandHandler::bm_genmsg; //Called as func/x/y/string
       commandsTable["BitmapGenSeq"] = &CommandHandler::bm_gen_seq; //called as func/x/y/string
       commandsTable["BitmapShowSeq"] = &CommandHandler::bm_show_seq; //called as func/x/y/string
+      commandsTable["BitmapShowLoc"] = &CommandHandler::bm_show_loc; //called as func/x/y/delay_ms/color(int/int/int)
       commandsTable["StoreFrame"] = &CommandHandler::store_frame;   //Called as func/function_to_call/args
       commandsTable["StartFrames"] = &CommandHandler::show_frames;  
       commandsTable["ResetFrames"] = &CommandHandler::reset_frames; //Called as func/
@@ -92,7 +92,7 @@ class CommandHandler{
     void update_grid_size(std::vector<String> & input){
       NUM_ROWS = input[0].toInt();
       NUM_COLS = input[1].toInt();  
-      _bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip, VERTICAL);
+      _bitmap = bitmap(NUM_ROWS, NUM_COLS, &strip);
     }
     void update_wifi(std::vector<String> & input){
         bool valid_loc = check_vector_loc(input);
@@ -145,20 +145,12 @@ class CommandHandler{
         this->handle_command(std::string(cmd_parsed.c_str()));
       }
     }
-    void bm_genmsg_v(std::vector<String> & input){
-      _bitmap.set_orientation(VERTICAL);
-      bm_genmsg(input);  
-    }
-    void bm_genmsg_h(std::vector<String> & input){
-      _bitmap.set_orientation(HORIZONTAL);
-      bm_genmsg(input);  
-    }
     void bm_genmsg(std::vector<String> & input){
       _bitmap.generate_msg_v((char*)input[0].c_str());
       Serial.println("Generated Message Successfully!");  
     }
     void bm_gen_seq(std::vector<String> & input){
-      _bitmap.generate_sequence_v(String(input[0].c_str()).toInt(), y, x);
+      _bitmap.generate_sequence_v(y, x);
     }
     void bm_show_seq(std::vector<String> & input){
       //Color 
@@ -179,6 +171,17 @@ class CommandHandler{
       _bitmap.show_sequence_delay(wait_time, color);
       show_led_int(0,0,0);
     }
+  void bm_show_loc(std::vector<String> & input){
+    //Color 
+    int r = String(input[1].c_str()).toInt();
+    int b = String(input[2].c_str()).toInt();
+    int g = String(input[3].c_str()).toInt();
+    //uint32_t color = 0; 
+    uint32_t color = strip.Color(r, b, g);
+    long delay_ms = atol(input[0].c_str()); //delay betwen showing locations
+    //Serial.println("Expected wait time for show_sequence:");
+    _bitmap.show_location(y, x, delay_ms, color);
+  }
     void handle_command(std::string input, std::string delimiter = "/"){
       if (input.size() == 1){
         switch(input[0]){
@@ -230,7 +233,8 @@ class CommandHandler{
           else{
             Serial.println(String("Invalid Command!" + parses[0] + "\n")); 
           }
-        }
+        this->show_led_int(0, 0, 0);
+      }
     }
     inline bool check_vector_role(std::vector<String> & input, int role_index = 0){
       return String(input[role_index].c_str()).toInt() == this->role_id; 
@@ -488,6 +492,7 @@ void init_location_arg_index(){
   LocationArgIndex["BitmapGenMsg"] = 1; //Called as func/x/y/string
   LocationArgIndex["BitmapGenSeq"] = 1; //called as func/x/y/string
   LocationArgIndex["BitmapShowSeq"] = 1; //called as func/x/y/string
+  LocationArgIndex["BitmapShowLoc"] = 1; //called as func/x/y/delay_ms/color(int/int/int)
   //LocationArgIndex["Auto"] = &(automata);
 }
 

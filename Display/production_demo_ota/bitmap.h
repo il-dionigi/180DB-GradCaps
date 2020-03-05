@@ -1,9 +1,7 @@
 // TODO: Add destructor!
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
-#include "SimpleMap.h"
-
-enum ORIENTATION { HORIZONTAL = 0, VERTICAL = 1 };
+#include <SimpleMap.h>
 
 class bitmap {
 private:
@@ -16,25 +14,22 @@ private:
   int m_seq_len;
   int m_row_len;
   int m_rows;
+  int m_width_char;
+  int m_height_char;
   int m_columns;
-  ORIENTATION m_orientation;
   int m_msg_count;
 
   Adafruit_NeoPixel* m_strip;
 
-  void do_something(bool on, uint32_t color);
+  void do_something(const bool on, const uint32_t color);
 public:
-  bitmap(int length, int width, Adafruit_NeoPixel* strip, ORIENTATION orientation);
+  bitmap(const int &num_rows, const int &num_cols, Adafruit_NeoPixel* strip);
   ~bitmap();
-  void print_char(char c);
   void print_scroll();
-  bool generate_msg_v(char* msg);
-  bool* get_sequence_v(int iterations, int r, int c);
-  bool generate_sequence_v(int iterations, int r, int c);
-  void show_sequence_delay(long interval_ms, uint32_t color);
-  void show_sequence_nodelay(long interval_ms, uint32_t color);
-  // can't think of good name, like the OG but lights up by column during interval
-  void show_sequence_scroll_delay(long interval_ms, uint32_t color);
-  void show_sequence_scroll_nodelay(long interval_ms, uint32_t color);
-  void set_orientation(ORIENTATION orientation);
+  bool generate_msg_v(const char* const &msg);
+  bool* get_sequence_v(const int &r, const int &c);
+  bool generate_sequence_v(const int &r, const int &c);
+  void show_location(const int &r, const int &c, const long &interval_ms, const uint32_t &color);
+  void show_sequence_delay(const long &interval_ms, const uint32_t &color);
+  void show_sequence_nodelay(const long &interval_ms, const uint32_t &color);
 };
