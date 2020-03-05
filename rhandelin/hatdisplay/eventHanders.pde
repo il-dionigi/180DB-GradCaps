@@ -40,10 +40,10 @@ public void CommandsList(int Value){
   else if(Value == 4){out = String.format("TheaterChase/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, B, G, WaitTime);}
   else if(Value == 5){out = String.format("TheaterChaseRainbow/%s/%s/%s/%s/%s/%s/", COL_INPUT, ROW_INPUT, R, G, B, WaitTime);}
   else if(Value == 6){out = String.format("UpdateLoc/%s/%s/%s/", ID_INPUT, COL_INPUT, ROW_INPUT);}
-  else if(Value == 7){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
-  else if(Value == 8){out = String.format("BitmapGenMsgH/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
+  else if(Value == 7){out = String.format("BitmapGenMsg/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
+  else if(Value == 8){out = String.format("BitmapGenMsg/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
   else if(Value == 9){out = String.format("BitmapGenSeq/%s/", "2");}
-  else if(Value == 10){out = String.format("BitmapGenMsgV/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
+  else if(Value == 10){out = String.format("BitmapShowSeq/%s/%s/%s/" ,COL_INPUT, ROW_INPUT, "UCLA");}
   else if(Value == 11){out = String.format("StoreFrame/%s/%s/%s/%s/%s/%s/", FUNC, COL_INPUT, ROW_INPUT, R, B, G);}
   else if(Value == 12){out = "StartFrames/";}
   else if(Value == 13){out = "ResetFrames/";}
