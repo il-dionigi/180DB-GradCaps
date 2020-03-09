@@ -208,6 +208,9 @@ class CommandHandler{
           case 'N':
             CommandHandler::set_none();
             break;
+          case 'X':
+            ;
+            break;
           }
         }
         else{
