@@ -26,7 +26,9 @@ private:
 public:
   bitmap(const int &num_rows, const int &num_cols, Adafruit_NeoPixel* strip);
   ~bitmap();
+  #if defined(DEBUG)
   void print_scroll();
+  #endif
   bool generate_msg_v(const char* const &msg);
   bool* get_sequence_v(const int &r, const int &c);
   bool generate_sequence_v(const int &r, const int &c);

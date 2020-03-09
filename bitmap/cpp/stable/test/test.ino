@@ -21,7 +21,11 @@ void setup() {
   
   bitmap bm = bitmap(15,5,&strip);
   bm.generate_msg_v("UCLA!");
-//  bm.generate_sequence_v(0, 0);
+//  bm.generate_sequence_v(0, 14);
+//  bm.generate_sequence_v(1, 14);
+//  bm.generate_sequence_v(2, 14);
+//  bm.generate_sequence_v(3, 14);
+//  bm.generate_sequence_v(4, 14);
 
   // Add these to the bitmap class? Enums??
   uint32_t red = strip.Color(150,0,0);

@@ -4,69 +4,90 @@
 #include "charDicts.h"
 
 bool bitmap::generate_msg_v(const char* const &msg) {
+
+  // count length of input msg
   int msg_len;
   for (int i = 0; msg[i] != '\0'; ++i) {
     ++msg_len;
   }
+  // +1 is added to account for spaces
   m_msg_len = msg_len*(m_height_char+1)*m_width_char;
 
+  #if defined(DEBUG)
   Serial.println(m_msg_len);
-
+  #endif
+  
   bool* parr = new bool[m_msg_len]; // based on charDict35, each char takes 6
+  int index = 0;
+
+  #if defined(DEBUG)
   char* bitmsg = new char[msg_len*(m_rows+1)*(m_columns+1)+1]; // based on charDict35, each char takes 6
-  int index = 0, m_index = 0;
+  int m_index = 0;
+  #endif
 
   if (parr == nullptr) {
+    #if defined(DEBUG)
     Serial.print("Error allocating msg vector.\n"); // add perror
+    #endif
     return false;
   } else {
     int h, w;
-    for (int i = 0; i < msg_len; i++) {
-      long encodedChar = charDict->get(msg[i]);
-      for (h = 0; h < m_height_char; ++h) {
+    // construct message row by row
+    for (h = 0; h < m_height_char; ++h) {
+      for (int i = 0; i < msg_len; i++) {
+        long encodedChar = charDict->get(msg[i])>>(h*m_width_char);
         for (w = 0; w < m_width_char; ++w) {
           if (encodedChar&0b1 == 1) {
             *(parr + index) = 1;
+            #if defined(DEBUG)
             *(bitmsg + m_index) = '#';
+            #endif
           } else {
             *(parr + index) = 0;
+            #if defined(DEBUG)
             *(bitmsg + m_index) = ' ';
+            #endif
           }
           encodedChar = encodedChar>>1;
           ++index;
+          #if defined(DEBUG)
           ++m_index;
+          #endif
         }
-        *(bitmsg + m_index) = '\n';
-        ++m_index;
-      }
-      // space after each line
-      for (w = 0; w < m_width_char; ++w) {
+        // space betwee letters
         *(parr + index) = 0;
         ++index;
-
+        #if defined(DEBUG)
         *(bitmsg + m_index) = ' ';
         ++m_index;
+        #endif
       }
-
+      // space/newline after each line
+      *(parr + index) = 0;
+      ++index;
+      #if defined(DEBUG)
       *(bitmsg + m_index) = '\n';
       ++m_index;
+      #endif
     }
-
+    #if defined(DEBUG)
+    // nullchar for string
     *(bitmsg + m_index) = '\0';
-
+    #endif
   }
 
   m_msg_v = parr;
-
+  #if defined(DEBUG)
   Serial.println(bitmsg);
-  Serial.println(m_seq_len);
-
   free(bitmsg);
+  #endif
 
 	return true;
 }
 
+#if defined(DEBUG)
 void bitmap::print_scroll() {
+  // get sequence for each m_rows, m_columns combination
   bool*** output = new bool**[m_rows];
   for (int r = 0; r < m_rows; ++r) {
     output[r] = new bool*[m_columns];
@@ -77,6 +98,7 @@ void bitmap::print_scroll() {
 
   char* display = new char[(m_columns+1)*(m_rows+1)];
 
+  // show iteration for each sequence
   for (int i = 0; i < m_seq_len; ++i) {
     int index = 0;
     for (int r = 0; r < m_rows; ++r) {
@@ -97,54 +119,60 @@ void bitmap::print_scroll() {
     Serial.println("---------");
   }
 
+  // delete variables
   delete[] display;
-  
   for (int r = 0; r < m_rows; ++r) {
     for (int c = 0; c < m_columns; ++c) {
             delete[] output[r][c];
     }
         delete[] output[r];
   }
-    delete[] output;
-  
+    delete[] output;  
 }
+#endif
 
 bool* bitmap::get_sequence_v(const int &r, const int &c) {
-  int len = m_msg_len / m_columns;
-  m_seq_len = len + m_rows;
-  Serial.println(m_seq_len+1);
-  char* output = new char[m_seq_len+1];
-
+  int len = m_msg_len / m_rows;
+  m_seq_len = len + m_columns;
   bool* parr = new bool[m_seq_len+1];
+  #if defined(DEBUG)
+  char* output = new char[m_seq_len+1];
+  #endif
 
+  // time needed for sequence to reach column
   int index = 0;
-  for (int i = m_rows - r; i > 0; --i) {
-    *(parr + index) = 0;
+  for (int i = m_columns - c; i > 0; --i) {
+    #if defined(DEBUG)
     *(output + index) = '0';
+    #endif
+    *(parr + index) = 0;
     ++index;
   }
 
-  int v_index = c;
+  // sequence starts at beginning of row
+  int v_index = (len+1)*r;
   while (index < m_seq_len) {
     *(parr + index) = *(m_msg_v + v_index);
-    v_index += m_columns;
+    ++v_index;
+    #if defined(DEBUG)
     if (*(parr + index)) {
       *(output + index) = '1';
     } else {
       *(output + index) = '0';
     }
-
+    #endif
     ++index;
   }
 
-  for (int i = m_seq_len - r; i < m_seq_len; ++i) {
+  // time needed for sequence to finish
+  for (int i = m_seq_len - c; i < m_seq_len; ++i) {
     *(parr + i) = 0;
   }
-
+  #if defined(DEBUG)
   *(output + index) = '\0';
-
   Serial.println(output);
   free(output);
+  #endif
 
   return parr;
 }
@@ -152,10 +180,14 @@ bool* bitmap::get_sequence_v(const int &r, const int &c) {
 void bitmap::do_something(const bool on, const uint32_t color) {
 	if (on) {
 		m_strip->fill(color);
+   #if defined(DEBUG)
 		Serial.println("On!");
+    #endif
 	} else {
 		m_strip->fill(0);
+   #if defined(DEBUG)
 		Serial.println("Off!");
+   #endif
 	}
 	m_strip->show();
 }
@@ -214,7 +246,7 @@ bitmap::bitmap(const int &num_rows, const int &num_cols, Adafruit_NeoPixel* stri
 
 	m_strip = strip;
 
-	if (num_rows < num_cols) {
+	if (num_rows > num_cols) {
 		m_columns = num_rows;
 		m_rows = num_cols;
 	} else {
@@ -222,15 +254,15 @@ bitmap::bitmap(const int &num_rows, const int &num_cols, Adafruit_NeoPixel* stri
 		m_rows = num_rows;
 	}
 
-	if (m_columns == 3) {
-    m_width_char = 3;
-    m_height_char = 5;
+	if (m_rows == 3) {
+    m_width_char = 5;
+    m_height_char = 3;
     charDict = create_charMap35();
-  } else if (m_columns == 4) {
-    m_width_char = 4;
-    m_height_char = 5;
+  } else if (m_rows == 4) {
+    m_width_char = 5;
+    m_height_char = 4;
     charDict = create_charMap45();
-  } else if (m_columns == 5) {
+  } else if (m_rows == 5) {
     m_width_char = 5;
     m_height_char = 5;
     charDict = create_charMap55();
