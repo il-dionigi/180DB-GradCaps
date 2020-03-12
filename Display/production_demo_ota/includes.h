@@ -14,10 +14,10 @@
 #define AIO_SERVER      "192.168.0.10"
 #define CHANNEL "test_channel"
 #define PUB_CHANNEL "responses"
-#define MSG_BUFFER_SIZE 50
+#define MSG_BUFFER_SIZE 9000
 
 //#define DEBUG 1
-#define MY_ROLE 69
+#define MY_ROLE 2
 
 #define CALL_MEMBER_FN(object,ptrToMember, args)  ((object).*(ptrToMember))(args);
 #define X_ADDR 0
