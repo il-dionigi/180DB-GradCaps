@@ -3,11 +3,15 @@
 //#include <SimpleMap.h>
 #include "charDicts.h"
 
-bool bitmap::generate_msg_v(const char* const &msg) {
+bool bitmap::generate_msg_v(char* const &msg) {
 
   // count length of input msg
   int msg_len;
   for (int i = 0; msg[i] != '\0'; ++i) {
+      // lowercase to uppercase
+      if(msg[i]>='a' && msg[i]<='z') {
+         msg[i] -= 32;
+      }
     ++msg_len;
   }
   // +1 is added to account for spaces

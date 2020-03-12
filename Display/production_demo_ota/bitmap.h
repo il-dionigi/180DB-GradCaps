@@ -29,7 +29,7 @@ public:
   #if defined(DEBUG)
   void print_scroll();
   #endif
-  bool generate_msg_v(const char* const &msg);
+  bool generate_msg_v(char* const &msg);
   bool* get_sequence_v(const int &r, const int &c);
   bool generate_sequence_v(const int &r, const int &c);
   void show_location(const int &r, const int &c, const long &interval_ms, const uint32_t &color);

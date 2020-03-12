@@ -20,7 +20,7 @@ void setup() {
   Serial.println("Hello, you've entered setup()...");
   
   bitmap bm = bitmap(15,5,&strip);
-  bm.generate_msg_v("UCLA!");
+  bm.generate_msg_v("UcLa RoCkS!");
 //  bm.generate_sequence_v(0, 14);
 //  bm.generate_sequence_v(1, 14);
 //  bm.generate_sequence_v(2, 14);
